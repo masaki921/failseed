@@ -35,6 +35,7 @@ export default function ChatScreen() {
   const [inputText, setInputText] = useState("");
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
   const [safetyError, setSafetyError] = useState<SafetyError | null>(null);
+  const [conversationTurn, setConversationTurn] = useState(0);
 
 
   const startConversationMutation = useMutation({
@@ -57,6 +58,7 @@ export default function ChatScreen() {
       ]);
       
       setConversationState('ongoing');
+      setConversationTurn(1);
       setInputText("");
     },
     onError: (error: any) => {
@@ -92,6 +94,7 @@ export default function ChatScreen() {
         { type: 'ai', content: data.message, timestamp: new Date().toISOString() }
       ]);
       
+      setConversationTurn(prev => prev + 1);
       setInputText("");
     },
     onError: (error: any) => {
@@ -156,6 +159,7 @@ export default function ChatScreen() {
     setInputText("");
     setCurrentEntryId(null);
     setSafetyError(null);
+    setConversationTurn(0);
   };
 
   const isLoading = startConversationMutation.isPending || 
@@ -275,14 +279,16 @@ export default function ChatScreen() {
                   disabled={isLoading}
                 />
                 <div className="flex justify-between items-center mt-4">
-                  <Button
-                    onClick={handleFinalize}
-                    variant="outline"
-                    className="border-leaf/20 text-leaf hover:bg-leaf/10 rounded-2xl"
-                    disabled={isLoading}
-                  >
-                    学びに変換する
-                  </Button>
+                  {conversationTurn >= 2 && (
+                    <Button
+                      onClick={handleFinalize}
+                      variant="outline"
+                      className="border-leaf/20 text-leaf hover:bg-leaf/10 rounded-2xl"
+                      disabled={isLoading}
+                    >
+                      学びに変換する
+                    </Button>
+                  )}
                   <div className="flex space-x-3 ml-auto">
                     <Button
                       onClick={handleContinueConversation}
