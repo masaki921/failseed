@@ -34,8 +34,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create new conversation entry
       const entry = await storage.createConversation(text);
 
-      // Generate AI response
-      const aiResponse = await generateConversationResponse("", text);
+      // Generate AI response with conversation turn count
+      const aiResponse = await generateConversationResponse("", text, 1);
       
       // Initialize conversation history
       const messages: ConversationMessage[] = [
@@ -52,7 +52,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ];
 
       // Update conversation history
-      await storage.updateConversationHistory(entry.id, messages);
+      await storage.updateConversationHistory(entry.id, messages, 1);
 
       const response: AIConversationResponse = {
         message: aiResponse.message,
@@ -101,13 +101,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? JSON.parse(entry.conversationHistory) 
         : [];
 
+      // Calculate conversation turn (count user messages + 1 for current message)
+      const conversationTurn = existingMessages.filter(msg => msg.role === 'user').length + 1;
+
       // Generate conversation context for AI
       const conversationContext = existingMessages
         .map(msg => `${msg.role}: ${msg.content}`)
         .join('\n');
 
-      // Generate AI response
-      const aiResponse = await generateConversationResponse(conversationContext, message);
+      // Generate AI response with conversation turn count
+      const aiResponse = await generateConversationResponse(conversationContext, message, conversationTurn);
       
       // Update conversation history
       const updatedMessages: ConversationMessage[] = [
@@ -124,7 +127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       ];
 
-      await storage.updateConversationHistory(entryId, updatedMessages);
+      await storage.updateConversationHistory(entryId, updatedMessages, conversationTurn);
 
       const response: AIConversationResponse = {
         message: aiResponse.message,

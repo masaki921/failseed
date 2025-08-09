@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 export interface IStorage {
   getEntry(id: string): Promise<Entry | undefined>;
   createConversation(text: string): Promise<Entry>;
-  updateConversationHistory(id: string, messages: ConversationMessage[]): Promise<Entry>;
+  updateConversationHistory(id: string, messages: ConversationMessage[], conversationTurn?: number): Promise<Entry>;
   finalizeConversation(id: string, growth: string, hint?: string): Promise<Entry>;
   updateHintStatus(id: string, hintStatus: UpdateHint["hintStatus"]): Promise<Entry | undefined>;
   getAllCompletedEntries(): Promise<Entry[]>;
@@ -28,6 +28,7 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
       text,
       conversationHistory: null,
+      conversationTurn: 1,
       aiGrowth: null,
       aiHint: null,
       hintStatus: "none",
@@ -37,7 +38,7 @@ export class MemStorage implements IStorage {
     return entry;
   }
 
-  async updateConversationHistory(id: string, messages: ConversationMessage[]): Promise<Entry> {
+  async updateConversationHistory(id: string, messages: ConversationMessage[], conversationTurn?: number): Promise<Entry> {
     const entry = this.entries.get(id);
     if (!entry) {
       throw new Error("Entry not found");
@@ -46,6 +47,7 @@ export class MemStorage implements IStorage {
     const updatedEntry: Entry = {
       ...entry,
       conversationHistory: JSON.stringify(messages),
+      conversationTurn: conversationTurn || entry.conversationTurn,
     };
 
     this.entries.set(id, updatedEntry);

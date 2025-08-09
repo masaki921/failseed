@@ -8,6 +8,7 @@ export const entries = pgTable("entries", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   text: text("text").notNull(), // Initial event description
   conversationHistory: text("conversation_history"), // JSON array of conversation messages
+  conversationTurn: integer("conversation_turn").default(1).notNull(), // Track conversation turns
   aiGrowth: text("ai_growth"), // AI's growth insight (filled when conversation concludes)
   aiHint: text("ai_hint"), // AI's actionable hint
   hintStatus: text("hint_status").default("none").notNull(), // 'none' | 'tried' | 'skipped'
