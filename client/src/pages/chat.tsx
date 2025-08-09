@@ -212,20 +212,7 @@ export default function ChatScreen() {
                     </p>
                   </div>
                   
-                  <div className="grid md:grid-cols-2 gap-6 mt-8">
-                    <div className="space-y-3">
-                      <h3 className="font-semibold text-ink flex items-center">
-                        <div className="w-2 h-2 bg-leaf rounded-full mr-3"></div>
-                        こんな方におすすめ
-                      </h3>
-                      <ul className="space-y-2 text-sm">
-                        <li>• 繊細で感受性が豊かな方（HSP）</li>
-                        <li>• 完璧主義で自分に厳しくなりがちな方</li>
-                        <li>• 小さな失敗も大きく感じてしまう方</li>
-                        <li>• 体験から学びを得たい方</li>
-                      </ul>
-                    </div>
-                    
+                  <div className="mt-8">
                     <div className="space-y-3">
                       <h3 className="font-semibold text-ink flex items-center">
                         <div className="w-2 h-2 bg-soil rounded-full mr-3"></div>
