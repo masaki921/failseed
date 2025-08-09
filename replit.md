@@ -28,12 +28,13 @@ Preferred communication style: Simple, everyday language.
 - **Development**: Hot reload setup with Vite middleware integration
 
 ### Data Storage Solutions
-- **Database**: PostgreSQL with Neon serverless hosting (currently using in-memory storage for development)
+- **Database**: PostgreSQL with Neon serverless hosting (switched from in-memory to database storage on 2025-08-09)
 - **ORM**: Drizzle ORM for type-safe database operations
 - **Schema**: Enhanced `entries` table storing conversation history as JSON, growth insights, and learning status
 - **Conversation Storage**: Full dialogue history preserved to enable learning extraction from complete context
-- **Migration**: Drizzle Kit for database schema management
+- **Migration**: Drizzle Kit for database schema management (schema pushed successfully)
 - **Session Storage**: PostgreSQL-backed sessions using connect-pg-simple
+- **Storage Implementation**: DatabaseStorage class using Drizzle ORM queries replacing MemStorage
 
 ### Authentication and Authorization
 - **Current Implementation**: Session-based storage without user authentication
