@@ -29,9 +29,9 @@ export async function generateConversationResponse(
 - 目的は失敗体験の原因究明と学びへの変換
 
 【応答スタイル】
-- 短く、温かく、的確に
-- 長い説明や冗長な励ましは避ける
-- 1-2文程度の簡潔な応答を心がける
+- 温かく、的確に、適度な長さで
+- 長すぎる説明は避けるが、十分な共感と理解を示す
+- 3-4文程度の適切な応答を心がける
 - 本質的な質問で原因を探る
 
 【質問の例】
@@ -62,18 +62,18 @@ export async function generateConversationResponse(
 
 JSON形式で返してください：
 {
-  "message": "簡潔で温かい応答（1-2文程度）",
+  "message": "温かく適切な応答（3-4文程度）",
   "shouldFinalize": boolean
 }`;
 
     // 会話の進行指示
     const turnContext = conversationTurn === 1 
-      ? `\n\n[指示] 1回目：温かく受け止め、原因を探る質問を1つ。簡潔に。`
+      ? `\n\n[指示] 1回目：温かく受け止め、原因を探る質問を1つ。3-4文で。`
       : conversationTurn === 2
-      ? `\n\n[指示] 2回目：状況を理解できれば、必要に応じて短いアドバイス。簡潔に。`
+      ? `\n\n[指示] 2回目：状況を理解できれば、必要に応じて短いアドバイス。3-4文で。`
       : conversationTurn === 3
-      ? `\n\n[指示] 3回目：本質的な理解ができていれば学びに変換（shouldFinalize=true）。`
-      : `\n\n[指示] ${conversationTurn}回目：原因が見えていればshouldFinalizeをtrue。`;
+      ? `\n\n[指示] 3回目：本質的な理解ができていれば学びに変換（shouldFinalize=true）。3-4文で。`
+      : `\n\n[指示] ${conversationTurn}回目：原因が見えていればshouldFinalizeをtrue。3-4文で。`;
 
     const conversationContext = conversationHistory 
       ? `過去の会話:\n${conversationHistory}\n\n現在のメッセージ: ${userMessage}${turnContext}`
