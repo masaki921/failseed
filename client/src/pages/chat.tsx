@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { apiRequest } from "@/lib/queryClient";
+import { useEncryption } from "@/hooks/useEncryption";
 import { 
   type AIConversationResponse, 
   type AIFinalizationResponse, 
@@ -14,7 +15,7 @@ import {
 } from "@shared/schema";
 import ChatMessage from "../components/chat-message";
 import LoadingIndicator from "../components/loading-indicator";
-import { Sprout, ArrowRight, FileText } from "lucide-react";
+import { Sprout, ArrowRight, FileText, Shield } from "lucide-react";
 
 interface Message {
   type: 'user' | 'ai';
@@ -36,11 +37,17 @@ export default function ChatScreen() {
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
   const [safetyError, setSafetyError] = useState<SafetyError | null>(null);
   const [conversationTurn, setConversationTurn] = useState(0);
+  const { encryptText, isReady: encryptionReady, hasEncryption } = useEncryption();
 
 
   const startConversationMutation = useMutation({
     mutationFn: async (data: StartConversationInput) => {
-      const response = await apiRequest("POST", "/api/conversation/start", data);
+      // クライアント側で暗号化してからサーバーに送信
+      const encryptedData = {
+        ...data,
+        text: await encryptText(data.text)
+      };
+      const response = await apiRequest("POST", "/api/conversation/start", encryptedData);
       return response.json() as Promise<AIConversationResponse>;
     },
     onSuccess: (data) => {
@@ -78,7 +85,12 @@ export default function ChatScreen() {
 
   const continueConversationMutation = useMutation({
     mutationFn: async (data: ContinueConversationInput) => {
-      const response = await apiRequest("POST", "/api/conversation/continue", data);
+      // クライアント側で暗号化してからサーバーに送信
+      const encryptedData = {
+        ...data,
+        message: await encryptText(data.message)
+      };
+      const response = await apiRequest("POST", "/api/conversation/continue", encryptedData);
       return response.json() as Promise<AIConversationResponse>;
     },
     onSuccess: (data) => {
@@ -179,6 +191,13 @@ export default function ChatScreen() {
           </div>
           
           <nav className="flex items-center space-x-6">
+            {/* プライバシー保護表示 */}
+            {hasEncryption && (
+              <div className="flex items-center space-x-2 text-leaf">
+                <Shield className="w-4 h-4" />
+                <span className="text-sm font-medium">暗号化保護</span>
+              </div>
+            )}
             <Button className="bg-leaf text-white hover:bg-leaf/90 rounded-xl">
               対話
             </Button>

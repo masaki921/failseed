@@ -1,8 +1,10 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useEncryption } from "@/hooks/useEncryption";
 import { type Entry } from "@shared/schema";
-import { Lightbulb } from "lucide-react";
+import { Lightbulb, Lock } from "lucide-react";
 
 interface GrowthEntryProps {
   entry: Entry;
@@ -11,6 +13,25 @@ interface GrowthEntryProps {
 }
 
 export default function GrowthEntry({ entry, onHintAction, isUpdating }: GrowthEntryProps) {
+  const [decryptedText, setDecryptedText] = useState<string>('');
+  const { decryptText, isReady } = useEncryption();
+
+  useEffect(() => {
+    const decryptOriginalText = async () => {
+      if (isReady && entry.text) {
+        try {
+          const decrypted = await decryptText(entry.text);
+          setDecryptedText(decrypted);
+        } catch (error) {
+          console.error('復号化エラー:', error);
+          setDecryptedText('[復号化できません]');
+        }
+      }
+    };
+
+    decryptOriginalText();
+  }, [entry.text, decryptText, isReady]);
+
   const formatDate = (date: Date | string) => {
     const d = new Date(date);
     return d.toLocaleDateString('ja-JP', {
@@ -44,6 +65,21 @@ export default function GrowthEntry({ entry, onHintAction, isUpdating }: GrowthE
           <div className="hint-status">
             {getHintStatusBadge(entry.hintStatus)}
           </div>
+        </div>
+
+        {/* 元の出来事（暗号化されたテキストを復号化して表示） */}
+        <div className="mb-4">
+          <h3 className="text-ink font-medium mb-2 flex items-center space-x-2">
+            <span>きっかけ</span>
+            {entry.text !== decryptedText && (
+              <div title="暗号化保護済み">
+                <Lock className="w-4 h-4 text-leaf/60" />
+              </div>
+            )}
+          </h3>
+          <p className="text-ink/60 leading-relaxed bg-sage/30 p-3 rounded-xl text-sm">
+            {decryptedText || entry.text}
+          </p>
         </div>
         
         <div className="mb-4">

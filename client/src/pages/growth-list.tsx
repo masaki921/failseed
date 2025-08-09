@@ -3,13 +3,15 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { apiRequest } from "@/lib/queryClient";
+import { useEncryption } from "@/hooks/useEncryption";
 import { type Entry, type UpdateHint } from "@shared/schema";
 import GrowthEntry from "../components/growth-entry";
-import { Sprout, MessageCircle } from "lucide-react";
+import { Sprout, MessageCircle, Shield } from "lucide-react";
 
 export default function GrowthList() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const { hasEncryption } = useEncryption();
 
   const { data: entries = [], isLoading } = useQuery<Entry[]>({
     queryKey: ['/api/grows'],
@@ -53,6 +55,13 @@ export default function GrowthList() {
           </div>
           
           <nav className="flex items-center space-x-6">
+            {/* プライバシー保護表示 */}
+            {hasEncryption && (
+              <div className="flex items-center space-x-2 text-leaf">
+                <Shield className="w-4 h-4" />
+                <span className="text-sm font-medium">暗号化保護</span>
+              </div>
+            )}
             <Button 
               variant="outline" 
               className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl"

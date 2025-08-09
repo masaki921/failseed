@@ -35,10 +35,14 @@ Preferred communication style: Simple, everyday language.
 - **Migration**: Drizzle Kit for database schema management (schema pushed successfully)
 - **Session Storage**: PostgreSQL-backed sessions using connect-pg-simple
 - **Storage Implementation**: DatabaseStorage class using Drizzle ORM queries replacing MemStorage
+- **Privacy Protection**: End-to-end encryption implemented (2025-08-09) - all conversation content encrypted client-side using AES-GCM before database storage
 
-### Authentication and Authorization
-- **Current Implementation**: Session-based storage without user authentication
-- **Session Management**: Express sessions for tracking conversation state
+### Privacy and Security
+- **End-to-End Encryption**: Client-side AES-GCM encryption of all conversation content before transmission to server
+- **Key Management**: Encryption keys stored in browser localStorage, unique per device/session
+- **Data Protection**: Conversation text encrypted on client, decrypted only on client - server stores only encrypted data
+- **Privacy Guarantee**: No one (including administrators) can read conversation content without user's encryption key
+- **Session Management**: Express sessions for tracking conversation state without storing sensitive content
 - **Safety Features**: Content filtering to detect potentially harmful input and provide crisis resources
 
 ### AI Integration
