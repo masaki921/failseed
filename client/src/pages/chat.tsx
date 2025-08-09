@@ -256,7 +256,6 @@ export default function ChatScreen() {
             <Card className="rounded-3xl shadow-sm border-leaf/5 mb-6">
               <CardContent className="p-8">
                 <div className="text-center mb-6">
-                  <h2 className="text-xl font-semibold text-ink mb-3">今日はどんなことがありましたか？</h2>
                   <p className="text-ink/70 leading-relaxed">
                     どんな小さな出来事でも大丈夫です。<br />
                     一緒に成長の芽を見つけてみましょう。
@@ -270,7 +269,7 @@ export default function ChatScreen() {
                     onChange={(e) => setInputText(e.target.value)}
                     className="w-full p-4 border-leaf/20 rounded-2xl focus:ring-leaf/30 focus:border-leaf/40 resize-none bg-sage/30 text-ink placeholder:text-ink/50"
                     rows={4}
-                    placeholder="どんな小さなことでも大丈夫です。一緒にお話ししましょう..."
+                    placeholder="今日はどんなことがありましたか？"
                     disabled={isLoading}
                   />
                   <div className="flex justify-end mt-4">
