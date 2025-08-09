@@ -22,7 +22,7 @@ Preferred communication style: Simple, everyday language.
 - **Runtime**: Node.js with Express.js framework
 - **Language**: TypeScript with ES modules
 - **API Design**: RESTful API with conversation-based endpoints supporting unlimited dialogue flow
-- **Conversation Flow**: Three-phase system (start, continue, finalize) allowing natural conversation progression
+- **Conversation Flow**: Three-phase system (start, continue, finalize) with user-controlled finalization button
 - **Error Handling**: Centralized error handling with safety checks for harmful content
 - **Session Management**: Express sessions with PostgreSQL session store
 - **Development**: Hot reload setup with Vite middleware integration
@@ -45,8 +45,9 @@ Preferred communication style: Simple, everyday language.
 - **Implementation**: "FailSeed君" persona - a gentle, empathetic AI counselor that leads natural conversations
 - **Conversation Management**: AI decides when sufficient information has been gathered to extract meaningful learning
 - **Safety**: Built-in content moderation to identify concerning input and redirect to mental health resources
-- **Response Structure**: Natural conversational responses with intelligent finalization triggers
-- **Prompt Engineering**: Specialized system prompts for HSP-focused, therapeutic dialogue that avoids commands and judgments
+- **Response Structure**: Natural conversational responses with user-initiated learning conversion
+- **Prompt Engineering**: Natural conversation system focusing on acceptance, empathy, and gentle exploration of root causes without formal phases
+- **User Control**: Always-available "学びに変換する" (Convert to Learning) button during conversations
 
 ## External Dependencies
 

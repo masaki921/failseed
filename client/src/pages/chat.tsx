@@ -35,7 +35,7 @@ export default function ChatScreen() {
   const [inputText, setInputText] = useState("");
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
   const [safetyError, setSafetyError] = useState<SafetyError | null>(null);
-  const [showFinalizeButton, setShowFinalizeButton] = useState(false);
+
 
   const startConversationMutation = useMutation({
     mutationFn: async (data: StartConversationInput) => {
@@ -57,7 +57,6 @@ export default function ChatScreen() {
       ]);
       
       setConversationState('ongoing');
-      setShowFinalizeButton(data.shouldFinalize);
       setInputText("");
     },
     onError: (error: any) => {
@@ -93,7 +92,6 @@ export default function ChatScreen() {
         { type: 'ai', content: data.message, timestamp: new Date().toISOString() }
       ]);
       
-      setShowFinalizeButton(data.shouldFinalize);
       setInputText("");
     },
     onError: (error: any) => {
@@ -127,7 +125,6 @@ export default function ChatScreen() {
       ]);
       
       setConversationState('complete');
-      setShowFinalizeButton(false);
     },
     onError: (error: any) => {
       console.error("Finalize error:", error);
@@ -159,7 +156,6 @@ export default function ChatScreen() {
     setInputText("");
     setCurrentEntryId(null);
     setSafetyError(null);
-    setShowFinalizeButton(false);
   };
 
   const isLoading = startConversationMutation.isPending || 
@@ -279,16 +275,14 @@ export default function ChatScreen() {
                   disabled={isLoading}
                 />
                 <div className="flex justify-between items-center mt-4">
-                  {showFinalizeButton && (
-                    <Button
-                      onClick={handleFinalize}
-                      variant="outline"
-                      className="border-leaf/20 text-leaf hover:bg-leaf/10 rounded-2xl"
-                      disabled={isLoading}
-                    >
-                      学びをまとめる
-                    </Button>
-                  )}
+                  <Button
+                    onClick={handleFinalize}
+                    variant="outline"
+                    className="border-leaf/20 text-leaf hover:bg-leaf/10 rounded-2xl"
+                    disabled={isLoading}
+                  >
+                    学びに変換する
+                  </Button>
                   <div className="flex space-x-3 ml-auto">
                     <Button
                       onClick={handleContinueConversation}
