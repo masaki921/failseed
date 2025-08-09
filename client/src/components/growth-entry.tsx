@@ -54,35 +54,54 @@ export default function GrowthEntry({ entry, onHintAction, isUpdating }: GrowthE
         </div>
 
         {entry.aiHint && (
-          <Card className="bg-white/60 border-0">
+          <Card className="bg-soil/20 border-0">
             <CardContent className="p-4">
-              <h4 className="text-ink font-medium mb-2 flex items-center">
-                <Lightbulb className="w-4 h-4 text-leaf mr-2" />
-                芽を伸ばすヒント
-              </h4>
-              <p className="text-ink/70 mb-3">{entry.aiHint}</p>
-              
-              {entry.hintStatus === 'none' && (
-                <div className="flex items-center space-x-3">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="bg-leaf/10 text-leaf border-leaf/20 hover:bg-leaf/20"
-                    onClick={() => onHintAction(entry.id, 'tried')}
-                    disabled={isUpdating}
-                  >
-                    やってみた
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="bg-ink/10 text-ink border-ink/20 hover:bg-ink/20"
-                    onClick={() => onHintAction(entry.id, 'skipped')}
-                    disabled={isUpdating}
-                  >
-                    見送る
-                  </Button>
+              {entry.hintStatus === 'tried' ? (
+                <div className="flex items-start space-x-3">
+                  <div className="w-5 h-5 bg-leaf rounded-sm flex items-center justify-center mt-0.5">
+                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-ink font-medium">やってみました: </span>
+                    <span className="text-ink/80">{entry.aiHint}</span>
+                  </div>
                 </div>
+              ) : entry.hintStatus === 'skipped' ? (
+                <div className="text-ink/60">
+                  <span className="font-medium">見送り: </span>
+                  <span>{entry.aiHint}</span>
+                </div>
+              ) : (
+                <>
+                  <h4 className="text-ink font-medium mb-2 flex items-center">
+                    <Lightbulb className="w-4 h-4 text-leaf mr-2" />
+                    学びを実践してみる
+                  </h4>
+                  <p className="text-ink/70 mb-3">{entry.aiHint}</p>
+                  
+                  <div className="flex items-center space-x-3">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="bg-leaf/10 text-leaf border-leaf/20 hover:bg-leaf/20"
+                      onClick={() => onHintAction(entry.id, 'tried')}
+                      disabled={isUpdating}
+                    >
+                      やってみた
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="bg-ink/10 text-ink border-ink/20 hover:bg-ink/20"
+                      onClick={() => onHintAction(entry.id, 'skipped')}
+                      disabled={isUpdating}
+                    >
+                      見送る
+                    </Button>
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
