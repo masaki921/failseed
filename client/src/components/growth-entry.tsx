@@ -64,7 +64,7 @@ export default function GrowthEntry({ entry, onHintAction, isUpdating }: GrowthE
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <span className="text-ink font-medium">やってみました: </span>
+                    <span className="text-ink font-medium">体験から得た学び: </span>
                     <span className="text-ink/80">{entry.aiHint}</span>
                   </div>
                 </div>
