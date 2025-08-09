@@ -7,13 +7,11 @@ export const entries = pgTable("entries", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   text: text("text").notNull(), // Initial event description
-  detailText: text("detail_text"), // Additional details from step 2
-  feel: text("feel"), // User's feelings (optional)
-  aiComfort: text("ai_comfort").notNull(), // AI's comforting response
-  aiQuestion: text("ai_question"), // AI's follow-up question
-  aiGrowth: text("ai_growth").notNull(), // AI's growth insight
+  conversationHistory: text("conversation_history"), // JSON array of conversation messages
+  aiGrowth: text("ai_growth"), // AI's growth insight (filled when conversation concludes)
   aiHint: text("ai_hint"), // AI's actionable hint
   hintStatus: text("hint_status").default("none").notNull(), // 'none' | 'tried' | 'skipped'
+  isCompleted: integer("is_completed").default(0).notNull(), // 0 = ongoing, 1 = completed
 });
 
 export const insertEntrySchema = createInsertSchema(entries).omit({
@@ -21,13 +19,17 @@ export const insertEntrySchema = createInsertSchema(entries).omit({
   createdAt: true,
 });
 
-export const step1Schema = z.object({
+export const startConversationSchema = z.object({
   text: z.string().min(1, "出来事を入力してください"),
 });
 
-export const step2Schema = z.object({
+export const continueConversationSchema = z.object({
   entryId: z.string(),
-  detailText: z.string().optional(),
+  message: z.string().min(1, "メッセージを入力してください"),
+});
+
+export const finalizeConversationSchema = z.object({
+  entryId: z.string(),
 });
 
 export const updateHintSchema = z.object({
@@ -36,19 +38,26 @@ export const updateHintSchema = z.object({
 
 export type Entry = typeof entries.$inferSelect;
 export type InsertEntry = z.infer<typeof insertEntrySchema>;
-export type Step1Input = z.infer<typeof step1Schema>;
-export type Step2Input = z.infer<typeof step2Schema>;
+export type StartConversationInput = z.infer<typeof startConversationSchema>;
+export type ContinueConversationInput = z.infer<typeof continueConversationSchema>;
+export type FinalizeConversationInput = z.infer<typeof finalizeConversationSchema>;
 export type UpdateHint = z.infer<typeof updateHintSchema>;
 
+// Conversation message structure
+export interface ConversationMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
+
 // AI Response types
-export interface AIStep1Response {
-  comfort: string;
-  question?: string;
+export interface AIConversationResponse {
+  message: string;
+  shouldFinalize: boolean; // AI decides when to conclude and extract learning
   entryId: string;
 }
 
-export interface AIStep2Response {
-  comfort: string;
+export interface AIFinalizationResponse {
   growth: string;
   hint?: string;
   entryId: string;

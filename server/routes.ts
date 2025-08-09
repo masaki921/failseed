@@ -1,15 +1,23 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { generateStep1Response, generateStep2Response, detectDangerousContent } from "./services/gemini";
-import { step1Schema, step2Schema, updateHintSchema, type AIStep1Response, type AIStep2Response } from "@shared/schema";
+import { generateConversationResponse, generateFinalizationResponse, detectDangerousContent } from "./services/gemini";
+import { 
+  startConversationSchema, 
+  continueConversationSchema, 
+  finalizeConversationSchema,
+  updateHintSchema, 
+  type AIConversationResponse, 
+  type AIFinalizationResponse,
+  type ConversationMessage 
+} from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
-  // Step 1: Initial event input → AI comfort + question
-  app.post("/api/entry/step1", async (req, res) => {
+  // Start new conversation
+  app.post("/api/conversation/start", async (req, res) => {
     try {
-      const { text } = step1Schema.parse(req.body);
+      const { text } = startConversationSchema.parse(req.body);
 
       // Check for dangerous content
       if (detectDangerousContent(text)) {
@@ -23,25 +31,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Generate AI response
-      const aiResponse = await generateStep1Response(text);
-      
-      // Create partial entry in storage
-      const entry = await storage.createPartialEntry(
-        text,
-        aiResponse.comfort,
-        aiResponse.question
-      );
+      // Create new conversation entry
+      const entry = await storage.createConversation(text);
 
-      const response: AIStep1Response = {
-        comfort: aiResponse.comfort,
-        question: aiResponse.question,
+      // Generate AI response
+      const aiResponse = await generateConversationResponse("", text);
+      
+      // Initialize conversation history
+      const messages: ConversationMessage[] = [
+        {
+          role: 'user',
+          content: text,
+          timestamp: new Date().toISOString()
+        },
+        {
+          role: 'assistant',
+          content: aiResponse.message,
+          timestamp: new Date().toISOString()
+        }
+      ];
+
+      // Update conversation history
+      await storage.updateConversationHistory(entry.id, messages);
+
+      const response: AIConversationResponse = {
+        message: aiResponse.message,
+        shouldFinalize: aiResponse.shouldFinalize,
         entryId: entry.id,
       };
 
       res.json(response);
     } catch (error) {
-      console.error("Step 1 error:", error);
+      console.error("Start conversation error:", error);
       res.status(500).json({ 
         error: "server_error",
         message: "応答の生成に失敗しました。しばらく待ってからもう一度お試しください。"
@@ -49,22 +70,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Step 2: Additional details → AI growth + hint + save complete entry
-  app.post("/api/entry/step2", async (req, res) => {
+  // Continue conversation
+  app.post("/api/conversation/continue", async (req, res) => {
     try {
-      const { entryId, detailText } = step2Schema.parse(req.body);
+      const { entryId, message } = continueConversationSchema.parse(req.body);
 
-      // Get the partial entry
-      const partialEntry = await storage.getEntry(entryId);
-      if (!partialEntry) {
+      // Get the conversation entry
+      const entry = await storage.getEntry(entryId);
+      if (!entry) {
         return res.status(404).json({ 
           error: "not_found",
-          message: "エントリが見つかりません。"
+          message: "会話が見つかりません。"
         });
       }
 
-      // Check for dangerous content in detail text
-      if (detailText && detectDangerousContent(detailText)) {
+      // Check for dangerous content
+      if (detectDangerousContent(message)) {
         return res.status(400).json({
           error: "safety_concern",
           message: "心配な内容が含まれています。専門の相談窓口にご相談ください。",
@@ -75,31 +96,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Generate AI step 2 response
-      const aiResponse = await generateStep2Response(partialEntry.text, detailText);
+      // Parse existing conversation history
+      const existingMessages: ConversationMessage[] = entry.conversationHistory 
+        ? JSON.parse(entry.conversationHistory) 
+        : [];
+
+      // Generate conversation context for AI
+      const conversationContext = existingMessages
+        .map(msg => `${msg.role}: ${msg.content}`)
+        .join('\n');
+
+      // Generate AI response
+      const aiResponse = await generateConversationResponse(conversationContext, message);
       
-      // Update entry with growth insights
-      const completedEntry = await storage.updateEntryWithGrowth(
+      // Update conversation history
+      const updatedMessages: ConversationMessage[] = [
+        ...existingMessages,
+        {
+          role: 'user',
+          content: message,
+          timestamp: new Date().toISOString()
+        },
+        {
+          role: 'assistant',
+          content: aiResponse.message,
+          timestamp: new Date().toISOString()
+        }
+      ];
+
+      await storage.updateConversationHistory(entryId, updatedMessages);
+
+      const response: AIConversationResponse = {
+        message: aiResponse.message,
+        shouldFinalize: aiResponse.shouldFinalize,
+        entryId: entryId,
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error("Continue conversation error:", error);
+      res.status(500).json({ 
+        error: "server_error",
+        message: "応答の生成に失敗しました。しばらく待ってからもう一度お試しください。"
+      });
+    }
+  });
+
+  // Finalize conversation and extract learning
+  app.post("/api/conversation/finalize", async (req, res) => {
+    try {
+      const { entryId } = finalizeConversationSchema.parse(req.body);
+
+      // Get the conversation entry
+      const entry = await storage.getEntry(entryId);
+      if (!entry) {
+        return res.status(404).json({ 
+          error: "not_found",
+          message: "会話が見つかりません。"
+        });
+      }
+
+      // Parse conversation history
+      const messages: ConversationMessage[] = entry.conversationHistory 
+        ? JSON.parse(entry.conversationHistory) 
+        : [];
+
+      const conversationContext = messages
+        .map(msg => `${msg.role}: ${msg.content}`)
+        .join('\n');
+
+      // Generate finalization response
+      const finalizationResponse = await generateFinalizationResponse(conversationContext);
+      
+      // Finalize conversation in storage
+      const completedEntry = await storage.finalizeConversation(
         entryId,
-        detailText,
-        aiResponse.comfort,
-        aiResponse.growth,
-        aiResponse.hint
+        finalizationResponse.growth,
+        finalizationResponse.hint
       );
 
-      const response: AIStep2Response = {
-        comfort: aiResponse.comfort,
-        growth: aiResponse.growth,
-        hint: aiResponse.hint,
+      const response: AIFinalizationResponse = {
+        growth: finalizationResponse.growth,
+        hint: finalizationResponse.hint,
         entryId: completedEntry.id,
       };
 
       res.json(response);
     } catch (error) {
-      console.error("Step 2 error:", error);
+      console.error("Finalize conversation error:", error);
       res.status(500).json({ 
         error: "server_error",
-        message: "応答の生成に失敗しました。しばらく待ってからもう一度お試しください。"
+        message: "学びの抽出に失敗しました。しばらく待ってからもう一度お試しください。"
       });
     }
   });
@@ -128,10 +215,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all growth entries
+  // Get all completed entries
   app.get("/api/grows", async (req, res) => {
     try {
-      const entries = await storage.getAllGrowthEntries();
+      const entries = await storage.getAllCompletedEntries();
       res.json(entries);
     } catch (error) {
       console.error("Get grows error:", error);

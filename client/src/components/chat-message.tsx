@@ -4,8 +4,7 @@ interface ChatMessageProps {
   message: {
     type: 'user' | 'ai';
     content: string;
-    isStep1?: boolean;
-    isStep2?: boolean;
+    timestamp: string;
   };
 }
 

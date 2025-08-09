@@ -6,16 +6,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { apiRequest } from "@/lib/queryClient";
-import { type AIStep1Response, type AIStep2Response, type Step1Input, type Step2Input } from "@shared/schema";
+import { 
+  type AIConversationResponse, 
+  type AIFinalizationResponse, 
+  type StartConversationInput, 
+  type ContinueConversationInput 
+} from "@shared/schema";
 import ChatMessage from "../components/chat-message";
 import LoadingIndicator from "../components/loading-indicator";
 import { Sprout, ArrowRight, FileText } from "lucide-react";
 
-interface ChatMessage {
+interface Message {
   type: 'user' | 'ai';
   content: string;
-  isStep1?: boolean;
-  isStep2?: boolean;
+  timestamp: string;
 }
 
 interface SafetyError {
@@ -26,29 +30,35 @@ interface SafetyError {
 
 export default function ChatScreen() {
   const [, setLocation] = useLocation();
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 'complete'>(1);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [eventText, setEventText] = useState("");
-  const [detailText, setDetailText] = useState("");
+  const [conversationState, setConversationState] = useState<'initial' | 'ongoing' | 'finalizing' | 'complete'>('initial');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputText, setInputText] = useState("");
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
   const [safetyError, setSafetyError] = useState<SafetyError | null>(null);
+  const [showFinalizeButton, setShowFinalizeButton] = useState(false);
 
-  const step1Mutation = useMutation({
-    mutationFn: async (data: Step1Input) => {
-      const response = await apiRequest("POST", "/api/entry/step1", data);
-      return response.json() as Promise<AIStep1Response>;
+  const startConversationMutation = useMutation({
+    mutationFn: async (data: StartConversationInput) => {
+      const response = await apiRequest("POST", "/api/conversation/start", data);
+      return response.json() as Promise<AIConversationResponse>;
     },
     onSuccess: (data) => {
       setSafetyError(null);
       setCurrentEntryId(data.entryId);
       
-      // Add AI response message
-      const aiContent = data.question 
-        ? `**受けとめ**: ${data.comfort}\n\n**質問**: ${data.question}`
-        : `**受けとめ**: ${data.comfort}`;
+      // Add user message
+      setMessages(prev => [...prev, 
+        { type: 'user', content: inputText, timestamp: new Date().toISOString() }
+      ]);
       
-      setMessages(prev => [...prev, { type: 'ai', content: aiContent, isStep1: true }]);
-      setCurrentStep(2);
+      // Add AI response message
+      setMessages(prev => [...prev, 
+        { type: 'ai', content: data.message, timestamp: new Date().toISOString() }
+      ]);
+      
+      setConversationState('ongoing');
+      setShowFinalizeButton(data.shouldFinalize);
+      setInputText("");
     },
     onError: (error: any) => {
       if (error.message.includes('safety_concern')) {
@@ -65,19 +75,26 @@ export default function ChatScreen() {
     }
   });
 
-  const step2Mutation = useMutation({
-    mutationFn: async (data: Step2Input) => {
-      const response = await apiRequest("POST", "/api/entry/step2", data);
-      return response.json() as Promise<AIStep2Response>;
+  const continueConversationMutation = useMutation({
+    mutationFn: async (data: ContinueConversationInput) => {
+      const response = await apiRequest("POST", "/api/conversation/continue", data);
+      return response.json() as Promise<AIConversationResponse>;
     },
     onSuccess: (data) => {
       setSafetyError(null);
       
-      // Add AI response message
-      const aiContent = `**受けとめ**: ${data.comfort}\n\n**育った部分**:\n${data.growth}${data.hint ? `\n\n**芽を伸ばすヒント**: ${data.hint}` : ''}`;
+      // Add user message
+      setMessages(prev => [...prev, 
+        { type: 'user', content: inputText, timestamp: new Date().toISOString() }
+      ]);
       
-      setMessages(prev => [...prev, { type: 'ai', content: aiContent, isStep2: true }]);
-      setCurrentStep('complete');
+      // Add AI response message
+      setMessages(prev => [...prev, 
+        { type: 'ai', content: data.message, timestamp: new Date().toISOString() }
+      ]);
+      
+      setShowFinalizeButton(data.shouldFinalize);
+      setInputText("");
     },
     onError: (error: any) => {
       if (error.message.includes('safety_concern')) {
@@ -94,47 +111,60 @@ export default function ChatScreen() {
     }
   });
 
-  const handleStep1Submit = () => {
-    if (!eventText.trim()) return;
+  const finalizeConversationMutation = useMutation({
+    mutationFn: async (entryId: string) => {
+      const response = await apiRequest("POST", "/api/conversation/finalize", { entryId });
+      return response.json() as Promise<AIFinalizationResponse>;
+    },
+    onSuccess: (data) => {
+      setSafetyError(null);
+      
+      // Add finalization message
+      const finalContent = `**体験から得た学び**:\n${data.growth}${data.hint ? `\n\n**今後に活かせること**: ${data.hint}` : ''}`;
+      
+      setMessages(prev => [...prev, 
+        { type: 'ai', content: finalContent, timestamp: new Date().toISOString() }
+      ]);
+      
+      setConversationState('complete');
+      setShowFinalizeButton(false);
+    },
+    onError: (error: any) => {
+      console.error("Finalize error:", error);
+    }
+  });
 
-    // Add user message
-    setMessages(prev => [...prev, { type: 'user', content: eventText }]);
-    
-    // Submit to API
-    step1Mutation.mutate({ text: eventText });
-    
-    // Clear input
-    setEventText("");
+  const handleStartConversation = () => {
+    if (!inputText.trim()) return;
+    startConversationMutation.mutate({ text: inputText });
   };
 
-  const handleStep2Submit = () => {
-    if (!currentEntryId) return;
-
-    // Add user message if there's detail text
-    if (detailText.trim()) {
-      setMessages(prev => [...prev, { type: 'user', content: detailText }]);
-    }
-    
-    // Submit to API
-    step2Mutation.mutate({ 
+  const handleContinueConversation = () => {
+    if (!inputText.trim() || !currentEntryId) return;
+    continueConversationMutation.mutate({ 
       entryId: currentEntryId, 
-      detailText: detailText.trim() || undefined 
+      message: inputText 
     });
-    
-    // Clear input
-    setDetailText("");
+  };
+
+  const handleFinalize = () => {
+    if (!currentEntryId) return;
+    setConversationState('finalizing');
+    finalizeConversationMutation.mutate(currentEntryId);
   };
 
   const startNewConversation = () => {
-    setCurrentStep(1);
+    setConversationState('initial');
     setMessages([]);
-    setEventText("");
-    setDetailText("");
+    setInputText("");
     setCurrentEntryId(null);
     setSafetyError(null);
+    setShowFinalizeButton(false);
   };
 
-  const isLoading = step1Mutation.isPending || step2Mutation.isPending;
+  const isLoading = startConversationMutation.isPending || 
+                   continueConversationMutation.isPending || 
+                   finalizeConversationMutation.isPending;
 
   return (
     <div className="min-h-screen bg-sage">
@@ -214,59 +244,79 @@ export default function ChatScreen() {
         {/* Input Section */}
         <Card className="rounded-3xl shadow-sm border-leaf/5">
           <CardContent className="p-6">
-            {currentStep === 1 && (
+            {conversationState === 'initial' && (
               <div>
-                <label className="block text-ink font-medium mb-3">出来事を教えてください</label>
+                <label className="block text-ink font-medium mb-3">今日はどんなことがありましたか？</label>
                 <Textarea
-                  value={eventText}
-                  onChange={(e) => setEventText(e.target.value)}
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
                   className="w-full p-4 border-leaf/20 rounded-2xl focus:ring-leaf/30 focus:border-leaf/40 resize-none bg-sage/30 text-ink placeholder:text-ink/50"
                   rows={4}
-                  placeholder="今日起きたことを、短くても構いませんので教えてください..."
+                  placeholder="どんな小さなことでも大丈夫です。一緒にお話ししましょう..."
                   disabled={isLoading}
                 />
                 <div className="flex justify-end mt-4">
                   <Button
-                    onClick={handleStep1Submit}
-                    disabled={!eventText.trim() || isLoading}
+                    onClick={handleStartConversation}
+                    disabled={!inputText.trim() || isLoading}
                     className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl"
                   >
-                    送信する
+                    お話しする
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </div>
               </div>
             )}
 
-            {currentStep === 2 && (
+            {conversationState === 'ongoing' && (
               <div>
-                <label className="block text-ink font-medium mb-3">もう少し詳しく教えてください</label>
                 <Textarea
-                  value={detailText}
-                  onChange={(e) => setDetailText(e.target.value)}
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
                   className="w-full p-4 border-leaf/20 rounded-2xl focus:ring-leaf/30 focus:border-leaf/40 resize-none bg-sage/30 text-ink placeholder:text-ink/50"
                   rows={3}
-                  placeholder="追加で教えていただけることがあれば..."
+                  placeholder="続けてお聞かせください..."
                   disabled={isLoading}
                 />
-                <div className="flex justify-end mt-4">
-                  <Button
-                    onClick={handleStep2Submit}
-                    disabled={isLoading}
-                    className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl"
-                  >
-                    送信する
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
+                <div className="flex justify-between items-center mt-4">
+                  {showFinalizeButton && (
+                    <Button
+                      onClick={handleFinalize}
+                      variant="outline"
+                      className="border-leaf/20 text-leaf hover:bg-leaf/10 rounded-2xl"
+                      disabled={isLoading}
+                    >
+                      学びをまとめる
+                    </Button>
+                  )}
+                  <div className="flex space-x-3 ml-auto">
+                    <Button
+                      onClick={handleContinueConversation}
+                      disabled={!inputText.trim() || isLoading}
+                      className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl"
+                    >
+                      続ける
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
 
-            {currentStep === 'complete' && (
+            {conversationState === 'finalizing' && (
+              <div className="text-center">
+                <div className="bg-soil/30 rounded-2xl p-6 mb-4">
+                  <Sprout className="w-12 h-12 text-leaf mx-auto mb-3 animate-pulse" />
+                  <p className="text-ink font-medium">お話から学びを抽出しています...</p>
+                </div>
+              </div>
+            )}
+
+            {conversationState === 'complete' && (
               <div className="text-center">
                 <div className="bg-soil/30 rounded-2xl p-6 mb-4">
                   <FileText className="w-12 h-12 text-leaf mx-auto mb-3" />
-                  <p className="text-ink font-medium">成長の記録が保存されました</p>
+                  <p className="text-ink font-medium">体験から学びを記録しました</p>
                 </div>
                 <Button
                   onClick={startNewConversation}

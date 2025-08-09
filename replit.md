@@ -1,8 +1,8 @@
-# Personal Growth Journal Application
+# FailSeed - Personal Growth Journal Application
 
 ## Overview
 
-This is a full-stack web application designed to help users process negative experiences and turn them into personal growth opportunities. The app uses AI-powered conversations to guide users through a two-step reflection process, providing comfort, asking meaningful questions, and offering actionable insights for personal development. Built with React, Express, and Google's Gemini AI, it features a clean, therapeutic interface with Japanese language support.
+FailSeed is a full-stack web application designed to help HSP (Highly Sensitive Person) and perfectionist users transform negative experiences into personal growth opportunities. The app uses AI-powered unlimited conversations with "FailSeed君" to guide users through natural dialogue, providing empathy, asking meaningful questions, and eventually extracting actionable learning insights. Built with React, Express, and Google's Gemini AI, it features a gentle, therapeutic interface optimized for sensitive users with Japanese language support.
 
 ## User Preferences
 
@@ -21,15 +21,17 @@ Preferred communication style: Simple, everyday language.
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js framework
 - **Language**: TypeScript with ES modules
-- **API Design**: RESTful API with structured endpoints for the two-step conversation flow
+- **API Design**: RESTful API with conversation-based endpoints supporting unlimited dialogue flow
+- **Conversation Flow**: Three-phase system (start, continue, finalize) allowing natural conversation progression
 - **Error Handling**: Centralized error handling with safety checks for harmful content
 - **Session Management**: Express sessions with PostgreSQL session store
 - **Development**: Hot reload setup with Vite middleware integration
 
 ### Data Storage Solutions
-- **Database**: PostgreSQL with Neon serverless hosting
+- **Database**: PostgreSQL with Neon serverless hosting (currently using in-memory storage for development)
 - **ORM**: Drizzle ORM for type-safe database operations
-- **Schema**: Single `entries` table storing user conversations, AI responses, and growth insights
+- **Schema**: Enhanced `entries` table storing conversation history as JSON, growth insights, and learning status
+- **Conversation Storage**: Full dialogue history preserved to enable learning extraction from complete context
 - **Migration**: Drizzle Kit for database schema management
 - **Session Storage**: PostgreSQL-backed sessions using connect-pg-simple
 
@@ -40,10 +42,11 @@ Preferred communication style: Simple, everyday language.
 
 ### AI Integration
 - **Provider**: Google Gemini AI (gemini-2.5-flash model)
-- **Implementation**: Custom service layer handling two-step conversation flow
+- **Implementation**: "FailSeed君" persona - a gentle, empathetic AI counselor that leads natural conversations
+- **Conversation Management**: AI decides when sufficient information has been gathered to extract meaningful learning
 - **Safety**: Built-in content moderation to identify concerning input and redirect to mental health resources
-- **Response Structure**: JSON-formatted responses with structured comfort messages, questions, and growth insights
-- **Prompt Engineering**: Specialized system prompts for empathetic, therapeutic responses
+- **Response Structure**: Natural conversational responses with intelligent finalization triggers
+- **Prompt Engineering**: Specialized system prompts for HSP-focused, therapeutic dialogue that avoids commands and judgments
 
 ## External Dependencies
 

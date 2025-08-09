@@ -1,12 +1,13 @@
-import { type Entry, type InsertEntry, type UpdateHint } from "@shared/schema";
+import { type Entry, type InsertEntry, type UpdateHint, type ConversationMessage } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
   getEntry(id: string): Promise<Entry | undefined>;
-  createPartialEntry(text: string, aiComfort: string, aiQuestion?: string): Promise<Entry>;
-  updateEntryWithGrowth(id: string, detailText: string | undefined, aiComfort: string, aiGrowth: string, aiHint?: string): Promise<Entry>;
+  createConversation(text: string): Promise<Entry>;
+  updateConversationHistory(id: string, messages: ConversationMessage[]): Promise<Entry>;
+  finalizeConversation(id: string, growth: string, hint?: string): Promise<Entry>;
   updateHintStatus(id: string, hintStatus: UpdateHint["hintStatus"]): Promise<Entry | undefined>;
-  getAllGrowthEntries(): Promise<Entry[]>;
+  getAllCompletedEntries(): Promise<Entry[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -20,31 +21,23 @@ export class MemStorage implements IStorage {
     return this.entries.get(id);
   }
 
-  async createPartialEntry(text: string, aiComfort: string, aiQuestion?: string): Promise<Entry> {
+  async createConversation(text: string): Promise<Entry> {
     const id = randomUUID();
     const entry: Entry = {
       id,
       createdAt: new Date(),
       text,
-      detailText: null,
-      feel: null,
-      aiComfort,
-      aiQuestion: aiQuestion || null,
-      aiGrowth: "", // Will be filled in step 2
+      conversationHistory: null,
+      aiGrowth: null,
       aiHint: null,
       hintStatus: "none",
+      isCompleted: 0,
     };
     this.entries.set(id, entry);
     return entry;
   }
 
-  async updateEntryWithGrowth(
-    id: string, 
-    detailText: string | undefined, 
-    aiComfort: string, 
-    aiGrowth: string, 
-    aiHint?: string
-  ): Promise<Entry> {
+  async updateConversationHistory(id: string, messages: ConversationMessage[]): Promise<Entry> {
     const entry = this.entries.get(id);
     if (!entry) {
       throw new Error("Entry not found");
@@ -52,10 +45,24 @@ export class MemStorage implements IStorage {
 
     const updatedEntry: Entry = {
       ...entry,
-      detailText: detailText || null,
-      aiComfort, // Update with step 2 comfort message
-      aiGrowth,
-      aiHint: aiHint || null,
+      conversationHistory: JSON.stringify(messages),
+    };
+
+    this.entries.set(id, updatedEntry);
+    return updatedEntry;
+  }
+
+  async finalizeConversation(id: string, growth: string, hint?: string): Promise<Entry> {
+    const entry = this.entries.get(id);
+    if (!entry) {
+      throw new Error("Entry not found");
+    }
+
+    const updatedEntry: Entry = {
+      ...entry,
+      aiGrowth: growth,
+      aiHint: hint || null,
+      isCompleted: 1,
     };
 
     this.entries.set(id, updatedEntry);
@@ -77,10 +84,10 @@ export class MemStorage implements IStorage {
     return updatedEntry;
   }
 
-  async getAllGrowthEntries(): Promise<Entry[]> {
+  async getAllCompletedEntries(): Promise<Entry[]> {
     // Return only completed entries (those with growth insights)
     return Array.from(this.entries.values())
-      .filter(entry => entry.aiGrowth)
+      .filter(entry => entry.isCompleted === 1 && entry.aiGrowth)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 }
