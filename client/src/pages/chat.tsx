@@ -254,12 +254,36 @@ export default function ChatScreen() {
 
             {/* Start Conversation Card */}
             <Card className="rounded-3xl shadow-sm border-leaf/5 mb-6">
-              <CardContent className="p-8 text-center">
-                <h2 className="text-xl font-semibold text-ink mb-3">今日はどんなことがありましたか？</h2>
-                <p className="text-ink/70 leading-relaxed">
-                  どんな小さな出来事でも大丈夫です。<br />
-                  一緒に成長の芽を見つけてみましょう。
-                </p>
+              <CardContent className="p-8">
+                <div className="text-center mb-6">
+                  <h2 className="text-xl font-semibold text-ink mb-3">今日はどんなことがありましたか？</h2>
+                  <p className="text-ink/70 leading-relaxed">
+                    どんな小さな出来事でも大丈夫です。<br />
+                    一緒に成長の芽を見つけてみましょう。
+                  </p>
+                </div>
+                
+                {/* Chat Input */}
+                <div>
+                  <Textarea
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    className="w-full p-4 border-leaf/20 rounded-2xl focus:ring-leaf/30 focus:border-leaf/40 resize-none bg-sage/30 text-ink placeholder:text-ink/50"
+                    rows={4}
+                    placeholder="どんな小さなことでも大丈夫です。一緒にお話ししましょう..."
+                    disabled={isLoading}
+                  />
+                  <div className="flex justify-end mt-4">
+                    <Button
+                      onClick={handleStartConversation}
+                      disabled={!inputText.trim() || isLoading}
+                      className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl"
+                    >
+                      お話しする
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </>
@@ -296,34 +320,11 @@ export default function ChatScreen() {
           </div>
         )}
 
-        {/* Input Section */}
-        <Card className="rounded-3xl shadow-sm border-leaf/5">
-          <CardContent className="p-6">
-            {conversationState === 'initial' && (
-              <div>
-                <label className="block text-ink font-medium mb-3">今日はどんなことがありましたか？</label>
-                <Textarea
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  className="w-full p-4 border-leaf/20 rounded-2xl focus:ring-leaf/30 focus:border-leaf/40 resize-none bg-sage/30 text-ink placeholder:text-ink/50"
-                  rows={4}
-                  placeholder="どんな小さなことでも大丈夫です。一緒にお話ししましょう..."
-                  disabled={isLoading}
-                />
-                <div className="flex justify-end mt-4">
-                  <Button
-                    onClick={handleStartConversation}
-                    disabled={!inputText.trim() || isLoading}
-                    className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl"
-                  >
-                    お話しする
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {conversationState === 'ongoing' && (
+        {/* Input Section - Only for ongoing conversations */}
+        {conversationState !== 'initial' && (
+          <Card className="rounded-3xl shadow-sm border-leaf/5">
+            <CardContent className="p-6">
+              {conversationState === 'ongoing' && (
               <div>
                 <Textarea
                   value={inputText}
@@ -382,8 +383,9 @@ export default function ChatScreen() {
                 </Button>
               </div>
             )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </main>
     </div>
   );
