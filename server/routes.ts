@@ -45,6 +45,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.session.save(() => {}); // Generate session ID if not exists
       }
       const sessionId = req.session.id!;
+      console.log(`[START] Session ID: ${sessionId}, Text: ${text.substring(0, 50)}...`);
 
       // Create new conversation entry
       const entry = await storage.createConversation(text, sessionId);
@@ -253,6 +254,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.session.save(() => {}); // Generate session ID if not exists
       }
       const sessionId = req.session.id!;
+      console.log(`[GROWS] Session ID: ${sessionId}, Found entries: ${(await storage.getAllCompletedEntries(sessionId)).length}`);
 
       const entries = await storage.getAllCompletedEntries(sessionId);
       res.json(entries);
