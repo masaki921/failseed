@@ -1,26 +1,29 @@
 import { type Entry, type InsertEntry, type UpdateHint, type ConversationMessage, entries } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
-  getEntry(id: string): Promise<Entry | undefined>;
-  createConversation(text: string): Promise<Entry>;
+  getEntry(id: string, sessionId: string): Promise<Entry | undefined>;
+  createConversation(text: string, sessionId: string): Promise<Entry>;
   updateConversationHistory(id: string, messages: ConversationMessage[], conversationTurn?: number): Promise<Entry>;
   finalizeConversation(id: string, growth: string, hint?: string): Promise<Entry>;
   updateHintStatus(id: string, hintStatus: UpdateHint["hintStatus"]): Promise<Entry | undefined>;
-  getAllCompletedEntries(): Promise<Entry[]>;
+  getAllCompletedEntries(sessionId: string): Promise<Entry[]>;
 }
 
 export class DatabaseStorage implements IStorage {
-  async getEntry(id: string): Promise<Entry | undefined> {
-    const [entry] = await db.select().from(entries).where(eq(entries.id, id));
+  async getEntry(id: string, sessionId: string): Promise<Entry | undefined> {
+    const [entry] = await db.select().from(entries).where(
+      and(eq(entries.id, id), eq(entries.sessionId, sessionId))
+    );
     return entry || undefined;
   }
 
-  async createConversation(text: string): Promise<Entry> {
+  async createConversation(text: string, sessionId: string): Promise<Entry> {
     const [entry] = await db
       .insert(entries)
       .values({
+        sessionId,
         text,
         conversationHistory: null,
         conversationTurn: 1,
@@ -78,11 +81,11 @@ export class DatabaseStorage implements IStorage {
     return entry || undefined;
   }
 
-  async getAllCompletedEntries(): Promise<Entry[]> {
+  async getAllCompletedEntries(sessionId: string): Promise<Entry[]> {
     const completedEntries = await db
       .select()
       .from(entries)
-      .where(eq(entries.isCompleted, 1))
+      .where(and(eq(entries.isCompleted, 1), eq(entries.sessionId, sessionId)))
       .orderBy(entries.createdAt);
     
     // Return only entries with growth insights, sorted by creation date descending

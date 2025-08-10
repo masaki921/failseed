@@ -1,6 +1,15 @@
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+
+// Session interface extension for TypeScript
+declare global {
+  namespace Express {
+    interface Request {
+      session: import('express-session').Session & Partial<import('express-session').SessionData>;
+    }
+  }
+}
 import { generateConversationResponse, generateFinalizationResponse, detectDangerousContent } from "./services/gemini";
 import { 
   startConversationSchema, 
@@ -31,8 +40,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Get or create session ID
+      if (!req.session.id) {
+        req.session.save(() => {}); // Generate session ID if not exists
+      }
+      const sessionId = req.session.id!;
+
       // Create new conversation entry
-      const entry = await storage.createConversation(text);
+      const entry = await storage.createConversation(text, sessionId);
 
       // Generate AI response with conversation turn count
       const aiResponse = await generateConversationResponse("", text, 1);
@@ -75,8 +90,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { entryId, message } = continueConversationSchema.parse(req.body);
 
+      // Get or create session ID
+      if (!req.session.id) {
+        req.session.save(() => {}); // Generate session ID if not exists
+      }
+      const sessionId = req.session.id!;
+
       // Get the conversation entry
-      const entry = await storage.getEntry(entryId);
+      const entry = await storage.getEntry(entryId, sessionId);
       if (!entry) {
         return res.status(404).json({ 
           error: "not_found",
@@ -150,8 +171,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { entryId } = finalizeConversationSchema.parse(req.body);
 
+      // Get or create session ID
+      if (!req.session.id) {
+        req.session.save(() => {}); // Generate session ID if not exists
+      }
+      const sessionId = req.session.id!;
+
       // Get the conversation entry
-      const entry = await storage.getEntry(entryId);
+      const entry = await storage.getEntry(entryId, sessionId);
       if (!entry) {
         return res.status(404).json({ 
           error: "not_found",
@@ -221,7 +248,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all completed entries
   app.get("/api/grows", async (req, res) => {
     try {
-      const entries = await storage.getAllCompletedEntries();
+      // Get or create session ID
+      if (!req.session.id) {
+        req.session.save(() => {}); // Generate session ID if not exists
+      }
+      const sessionId = req.session.id!;
+
+      const entries = await storage.getAllCompletedEntries(sessionId);
       res.json(entries);
     } catch (error) {
       console.error("Get grows error:", error);

@@ -5,6 +5,7 @@ import { z } from "zod";
 
 export const entries = pgTable("entries", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").default('legacy').notNull(), // セッションIDでユーザーを識別
   createdAt: timestamp("created_at").defaultNow().notNull(),
   text: text("text").notNull(), // Initial event description
   conversationHistory: text("conversation_history"), // JSON array of conversation messages

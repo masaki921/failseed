@@ -30,11 +30,12 @@ Preferred communication style: Simple, everyday language.
 ### Data Storage Solutions
 - **Database**: PostgreSQL with Neon serverless hosting (switched from in-memory to database storage on 2025-08-09)
 - **ORM**: Drizzle ORM for type-safe database operations
-- **Schema**: Enhanced `entries` table storing conversation history as JSON, growth insights, and learning status
+- **Schema**: Enhanced `entries` table with session-based isolation storing conversation history as JSON, growth insights, and learning status
+- **Privacy Protection**: Session ID-based data isolation implemented (2025-08-09) - each user can only access their own records
 - **Conversation Storage**: Full dialogue history preserved to enable learning extraction from complete context
 - **Migration**: Drizzle Kit for database schema management (schema pushed successfully)
-- **Session Storage**: PostgreSQL-backed sessions using connect-pg-simple
-- **Storage Implementation**: DatabaseStorage class using Drizzle ORM queries replacing MemStorage
+- **Session Storage**: Express session management with session ID tracking for data privacy
+- **Storage Implementation**: DatabaseStorage class using Drizzle ORM queries with session-based filtering
 
 ### Authentication and Authorization
 - **Current Implementation**: Session-based storage without user authentication

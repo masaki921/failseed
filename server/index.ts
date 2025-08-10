@@ -1,10 +1,22 @@
 import express, { type Request, Response, NextFunction } from "express";
+import session from "express-session";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// セッション設定
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'fallback-secret-for-dev',
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: false, // HTTPSでない場合はfalse
+    maxAge: 1000 * 60 * 60 * 24 * 30, // 30日
+  }
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();
