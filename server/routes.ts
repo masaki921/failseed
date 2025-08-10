@@ -40,11 +40,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Get or create session ID
+      // Get or create session ID - デプロイ環境デバッグ
       if (!req.session.id) {
         req.session.save(() => {}); // Generate session ID if not exists
       }
       const sessionId = req.session.id!;
+      
+      // デプロイ環境デバッグログ
+      if (process.env.REPLIT_DEPLOYMENT === '1') {
+        console.log(`[DEPLOY-START] Session ID: ${sessionId}, Text: ${text.substring(0, 30)}...`);
+      }
 
       // Create new conversation entry
       const entry = await storage.createConversation(text, sessionId);
@@ -90,11 +95,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { entryId, message } = continueConversationSchema.parse(req.body);
 
-      // Get or create session ID
+      // Get or create session ID - デプロイ環境デバッグ
       if (!req.session.id) {
         req.session.save(() => {}); // Generate session ID if not exists
       }
       const sessionId = req.session.id!;
+      
+      // デプロイ環境デバッグログ
+      if (process.env.REPLIT_DEPLOYMENT === '1') {
+        console.log(`[DEPLOY-CONTINUE] Session ID: ${sessionId}, EntryId: ${entryId}`);
+      }
 
       // Get the conversation entry
       const entry = await storage.getEntry(entryId, sessionId);
@@ -248,13 +258,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all completed entries
   app.get("/api/grows", async (req, res) => {
     try {
-      // Get or create session ID
+      // Get or create session ID - デプロイ環境デバッグ
       if (!req.session.id) {
         req.session.save(() => {}); // Generate session ID if not exists
       }
       const sessionId = req.session.id!;
+      
+      // デプロイ環境デバッグログ
+      if (process.env.REPLIT_DEPLOYMENT === '1') {
+        console.log(`[DEPLOY-GROWS] Session ID: ${sessionId}`);
+        console.log(`[DEPLOY-GROWS] Cookie headers:`, req.headers.cookie);
+      }
 
       const entries = await storage.getAllCompletedEntries(sessionId);
+      
+      // デプロイ環境デバッグログ
+      if (process.env.REPLIT_DEPLOYMENT === '1') {
+        console.log(`[DEPLOY-GROWS] Found ${entries.length} entries`);
+      }
       res.json(entries);
     } catch (error) {
       console.error("Get grows error:", error);

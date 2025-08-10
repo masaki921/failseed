@@ -7,15 +7,20 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// セッション設定
+// セッション設定 - デプロイ環境対応
+const isProduction = process.env.REPLIT_DEPLOYMENT === '1';
 app.use(session({
   secret: process.env.SESSION_SECRET || 'fallback-secret-for-dev',
   resave: false,
   saveUninitialized: true,
   cookie: {
-    secure: false, // HTTPSでない場合はfalse
+    secure: isProduction, // デプロイ環境ではHTTPS必須
     maxAge: 1000 * 60 * 60 * 24 * 30, // 30日
-  }
+    sameSite: isProduction ? 'none' : 'lax', // クロスサイト対応
+    httpOnly: true, // XSS攻撃対策
+  },
+  name: 'failseed.sid', // セッション名を明示的に設定
+  proxy: isProduction, // リバースプロキシ使用時はtrue
 }));
 
 app.use((req, res, next) => {
