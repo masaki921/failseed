@@ -1,6 +1,6 @@
 import { type Entry, type InsertEntry, type UpdateHint, type ConversationMessage, entries } from "@shared/schema";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, ne } from "drizzle-orm";
 
 export interface IStorage {
   getEntry(id: string, sessionId: string): Promise<Entry | undefined>;
