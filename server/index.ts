@@ -8,6 +8,12 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
+// プロキシ信頼設定（Replit環境対応）
+const isProduction = process.env.REPLIT_DEPLOYMENT === '1';
+if (isProduction) {
+  app.set('trust proxy', 1);
+}
+
 // セキュリティミドルウェア
 app.use(helmet({
   contentSecurityPolicy: false, // Vite開発サーバー対応
@@ -15,7 +21,6 @@ app.use(helmet({
 }));
 
 // CORS設定
-const isProduction = process.env.REPLIT_DEPLOYMENT === '1';
 app.use(cors({
   origin: isProduction ? true : ["http://localhost:3000", "http://localhost:5000"],
   credentials: true,
