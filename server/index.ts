@@ -1,16 +1,52 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import rateLimit from "express-rate-limit";
+import cors from "cors";
+import helmet from "helmet";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
-// セッション設定 - デプロイ環境対応
+// セキュリティミドルウェア
+app.use(helmet({
+  contentSecurityPolicy: false, // Vite開発サーバー対応
+  crossOriginEmbedderPolicy: false,
+}));
+
+// CORS設定
 const isProduction = process.env.REPLIT_DEPLOYMENT === '1';
+app.use(cors({
+  origin: isProduction ? true : ["http://localhost:3000", "http://localhost:5000"],
+  credentials: true,
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+// レート制限
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15分
+  max: isProduction ? 100 : 1000, // 本番環境では厳しく制限
+  message: {
+    error: "rate_limit_exceeded",
+    message: "リクエストが多すぎます。しばらく待ってからもう一度お試しください。"
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(limiter);
+
+// ボディサイズ制限
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// セッション設定 - セキュリティ強化
+if (!process.env.SESSION_SECRET && isProduction) {
+  throw new Error("SESSION_SECRET environment variable is required in production");
+}
+
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'fallback-secret-for-dev',
+  secret: process.env.SESSION_SECRET || 'dev-only-secret-change-in-production',
   resave: false,
   saveUninitialized: true,
   cookie: {

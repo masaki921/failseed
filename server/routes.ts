@@ -27,6 +27,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/conversation/start", async (req, res) => {
     try {
       const { text } = startConversationSchema.parse(req.body);
+      
+      // 入力サイズ制限
+      if (text.length > 5000) {
+        return res.status(400).json({
+          error: "input_too_long",
+          message: "入力が長すぎます。5000文字以下で入力してください。"
+        });
+      }
 
       // Check for dangerous content
       if (detectDangerousContent(text)) {
@@ -46,9 +54,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const sessionId = req.session.id!;
       
-      // デプロイ環境デバッグログ
-      if (process.env.REPLIT_DEPLOYMENT === '1') {
-        console.log(`[DEPLOY-START] Session ID: ${sessionId}, Text: ${text.substring(0, 30)}...`);
+      // セキュリティ: 本番環境ではデバッグログを出力しない
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[DEBUG] Session: ${sessionId.substring(0, 8)}..., Text length: ${text.length}`);
       }
 
       // Create new conversation entry
@@ -94,6 +102,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/conversation/continue", async (req, res) => {
     try {
       const { entryId, message } = continueConversationSchema.parse(req.body);
+      
+      // 入力サイズ制限
+      if (message.length > 5000) {
+        return res.status(400).json({
+          error: "input_too_long",
+          message: "入力が長すぎます。5000文字以下で入力してください。"
+        });
+      }
 
       // Get or create session ID - デプロイ環境デバッグ
       if (!req.session.id) {
@@ -101,9 +117,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const sessionId = req.session.id!;
       
-      // デプロイ環境デバッグログ
-      if (process.env.REPLIT_DEPLOYMENT === '1') {
-        console.log(`[DEPLOY-CONTINUE] Session ID: ${sessionId}, EntryId: ${entryId}`);
+      // セキュリティ: 本番環境ではデバッグログを出力しない
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[DEBUG] Session: ${sessionId.substring(0, 8)}..., EntryId: ${entryId}`);
       }
 
       // Get the conversation entry
@@ -264,17 +280,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const sessionId = req.session.id!;
       
-      // デプロイ環境デバッグログ
-      if (process.env.REPLIT_DEPLOYMENT === '1') {
-        console.log(`[DEPLOY-GROWS] Session ID: ${sessionId}`);
-        console.log(`[DEPLOY-GROWS] Cookie headers:`, req.headers.cookie);
+      // セキュリティ: 本番環境ではデバッグログを出力しない
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[DEBUG] Session: ${sessionId.substring(0, 8)}..., requesting entries`);
       }
 
       const entries = await storage.getAllCompletedEntries(sessionId);
       
-      // デプロイ環境デバッグログ
-      if (process.env.REPLIT_DEPLOYMENT === '1') {
-        console.log(`[DEPLOY-GROWS] Found ${entries.length} entries`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[DEBUG] Found ${entries.length} entries for session`);
       }
       res.json(entries);
     } catch (error) {
