@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 
 const ai = new GoogleGenAI({ 
-  apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || "" 
+  apiKey: process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY || "" 
 });
 
 export interface ConversationResponse {
@@ -20,6 +20,14 @@ export async function generateConversationResponse(
   conversationTurn: number = 1
 ): Promise<ConversationResponse> {
   try {
+    // APIキーデバッグ
+    const apiKey = process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY || "";
+    if (!apiKey) {
+      throw new Error("No API key found in environment variables");
+    }
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[DEBUG] Using API key: ${apiKey.substring(0, 10)}... (length: ${apiKey.length})`);
+    }
     const systemPrompt = `あなたは「FailSeed君」として、ユーザーの体験を温かく受け止めながら、失敗体験の原因を探り学びに変換する聞き役メンターです。
 
 【基本姿勢】
