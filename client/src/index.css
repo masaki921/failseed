@@ -41,33 +41,11 @@
   --font-mono: Menlo, monospace;
   --radius: 1.5rem;
   
-  /* Custom FailSeed colors - Seed to Flower Journey */
-  /* Background & Base */
-  --sage: hsl(134, 25%, 96%); /* Slightly warmer sage */
-  --ink: hsl(122, 15%, 25%); /* Deeper text color */
-  
-  /* Seed Stage - Earth & Foundation */
-  --soil: hsl(30, 35%, 25%); /* Rich soil brown */
-  --earth: hsl(25, 45%, 35%); /* Warm earth tone */
-  --seed: hsl(20, 30%, 45%); /* Seed brown */
-  
-  /* Sprout Stage - Fresh Growth */
-  --leaf: hsl(122, 30%, 45%); /* Enhanced primary green */
-  --sprout: hsl(100, 40%, 55%); /* Fresh young green */
-  --stem: hsl(140, 25%, 35%); /* Deeper forest green */
-  
-  /* Flower Stage - Bloom & Warmth */
-  --blossom: hsl(340, 35%, 70%); /* Soft pink bloom */
-  --petal: hsl(320, 25%, 80%); /* Light petal pink */
-  --sunset: hsl(25, 55%, 65%); /* Warm sunset orange */
-  
-  /* Energy & Light */
-  --sunlight: hsl(45, 70%, 62%); /* Golden sunlight */
-  --glow: hsl(50, 60%, 75%); /* Warm glow */
-  
-  /* Complementary & Accent */
-  --accent-warm: hsl(15, 45%, 55%); /* Warm accent */
-  --accent-cool: hsl(200, 30%, 70%); /* Cool morning dew */
+  /* Custom FailSeed colors */
+  --sage: hsl(134, 29%, 95%);
+  --ink: hsl(122, 10%, 30%);
+  --leaf: hsl(122, 18%, 45%);
+  --soil: hsl(43, 27%, 90%);
 }
 
 .dark {
@@ -107,80 +85,49 @@
 
   body {
     @apply font-sans antialiased text-foreground;
-    background-color: var(--sage);
+    background-color: hsl(134, 29%, 95%);
     min-height: 100vh;
   }
 }
 
 @layer utilities {
-  /* Background Colors */
-  .bg-sage { background-color: var(--sage); }
-  .bg-ink { background-color: var(--ink); }
-  .bg-soil { background-color: var(--soil); }
-  .bg-earth { background-color: var(--earth); }
-  .bg-seed { background-color: var(--seed); }
-  .bg-leaf { background-color: var(--leaf); }
-  .bg-sprout { background-color: var(--sprout); }
-  .bg-stem { background-color: var(--stem); }
-  .bg-blossom { background-color: var(--blossom); }
-  .bg-petal { background-color: var(--petal); }
-  .bg-sunset { background-color: var(--sunset); }
-  .bg-sunlight { background-color: var(--sunlight); }
-  .bg-glow { background-color: var(--glow); }
-  .bg-accent-warm { background-color: var(--accent-warm); }
-  .bg-accent-cool { background-color: var(--accent-cool); }
-  
-  /* Text Colors */
-  .text-sage { color: var(--sage); }
-  .text-ink { color: var(--ink); }
-  .text-soil { color: var(--soil); }
-  .text-earth { color: var(--earth); }
-  .text-seed { color: var(--seed); }
-  .text-leaf { color: var(--leaf); }
-  .text-sprout { color: var(--sprout); }
-  .text-stem { color: var(--stem); }
-  .text-blossom { color: var(--blossom); }
-  .text-petal { color: var(--petal); }
-  .text-sunset { color: var(--sunset); }
-  .text-sunlight { color: var(--sunlight); }
-  .text-glow { color: var(--glow); }
-  .text-accent-warm { color: var(--accent-warm); }
-  .text-accent-cool { color: var(--accent-cool); }
-  
-  /* Border Colors */
-  .border-sage { border-color: var(--sage); }
-  .border-ink { border-color: var(--ink); }
-  .border-soil { border-color: var(--soil); }
-  .border-earth { border-color: var(--earth); }
-  .border-seed { border-color: var(--seed); }
-  .border-leaf { border-color: var(--leaf); }
-  .border-sprout { border-color: var(--sprout); }
-  .border-stem { border-color: var(--stem); }
-  .border-blossom { border-color: var(--blossom); }
-  .border-petal { border-color: var(--petal); }
-  .border-sunset { border-color: var(--sunset); }
-  .border-sunlight { border-color: var(--sunlight); }
-  .border-glow { border-color: var(--glow); }
-  .border-accent-warm { border-color: var(--accent-warm); }
-  .border-accent-cool { border-color: var(--accent-cool); }
-  
-  /* Gradient Utilities */
-  .gradient-seed { background: linear-gradient(135deg, var(--soil), var(--earth)); }
-  .gradient-growth { background: linear-gradient(135deg, var(--leaf), var(--sprout)); }
-  .gradient-bloom { background: linear-gradient(135deg, var(--blossom), var(--sunset)); }
-  .gradient-sunlight { background: linear-gradient(135deg, var(--sunlight), var(--glow)); }
-  
-  /* Growth Stage Indicators */
-  .growth-seed { 
-    background: var(--soil);
-    color: var(--sage);
+  .bg-sage {
+    background-color: hsl(134, 29%, 95%);
   }
-  .growth-sprout { 
-    background: var(--leaf);
-    color: var(--sage);
+  
+  .bg-ink {
+    background-color: hsl(122, 10%, 30%);
   }
-  .growth-bloom { 
-    background: var(--blossom);
-    color: var(--sage);
+  
+  .bg-leaf {
+    background-color: hsl(122, 18%, 45%);
+  }
+  
+  .bg-soil {
+    background-color: hsl(43, 27%, 90%);
+  }
+  
+  .text-sage {
+    color: hsl(134, 29%, 95%);
+  }
+  
+  .text-ink {
+    color: hsl(122, 10%, 30%);
+  }
+  
+  .text-leaf {
+    color: hsl(122, 18%, 45%);
+  }
+  
+  .text-soil {
+    color: hsl(43, 27%, 90%);
+  }
+  
+  .border-leaf {
+    border-color: hsl(122, 18%, 45%);
+  }
+  
+  .border-sage {
+    border-color: hsl(134, 29%, 95%);
   }
 }
