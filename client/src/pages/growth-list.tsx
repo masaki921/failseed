@@ -66,8 +66,8 @@ export default function GrowthList() {
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/">
             <div className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity">
-              <div className="w-8 h-8 bg-leaf rounded-full flex items-center justify-center">
-                <Sprout className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center">
+                <Sprout className="w-6 h-6 text-white" />
               </div>
               <h1 className="text-xl font-semibold text-ink">FailSeed</h1>
             </div>
@@ -87,7 +87,6 @@ export default function GrowthList() {
                 variant="outline"
                 className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl"
               >
-                <Calendar className="w-4 h-4 mr-2" />
                 カレンダー
               </Button>
             </Link>

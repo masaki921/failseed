@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Calendar, Lightbulb, Target } from "lucide-react";
+import { MessageCircle, Calendar, Lightbulb, Target, Sprout } from "lucide-react";
 
 // 偉人の名言データ
 const inspirationalQuotes = [
@@ -130,16 +130,27 @@ export default function Home() {
       <div className="border-b border-leaf/10 bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-leaf rounded-full flex items-center justify-center">
-                <Lightbulb className="w-5 h-5 text-white" />
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center">
+                <Sprout className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-ink">FailSeed</h1>
+              <h1 className="text-xl font-semibold text-ink">FailSeed</h1>
             </div>
             <nav className="flex items-center space-x-4">
               <Link href="/growth">
-                <Button variant="ghost" className="text-ink hover:text-ink/80">
+                <Button 
+                  variant="outline" 
+                  className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl"
+                >
                   記録一覧
+                </Button>
+              </Link>
+              <Link href="/calendar">
+                <Button 
+                  variant="outline" 
+                  className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl"
+                >
+                  カレンダー
                 </Button>
               </Link>
             </nav>
@@ -244,16 +255,23 @@ export default function Home() {
               />
 
               <div className="text-center">
-                <Link href="/chat">
-                  <Button 
-                    size="lg"
-                    disabled={!text.trim()}
-                    className="px-8 py-3 bg-leaf hover:bg-leaf/90 text-white font-medium rounded-2xl shadow-sm"
-                  >
-                    <MessageCircle className="w-5 h-5 mr-2" />
-                    対話する
-                  </Button>
-                </Link>
+                <Button 
+                  size="lg"
+                  disabled={!text.trim()}
+                  className="px-8 py-3 bg-leaf hover:bg-leaf/90 text-white font-medium rounded-2xl shadow-sm"
+                  onClick={() => {
+                    if (text.trim()) {
+                      // テキストを一時的にlocalStorageに保存
+                      localStorage.setItem('chatInput', text);
+                      setText('');
+                      // 対話開始の表示を追加
+                      alert('対話を開始します！FailSeed君があなたの体験を聞いてくれます。');
+                    }
+                  }}
+                >
+                  <MessageCircle className="w-5 h-5 mr-2" />
+                  対話する
+                </Button>
               </div>
             </div>
           </CardContent>

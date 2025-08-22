@@ -3,7 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, Sprout } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, ChevronLeft, ChevronRight, Home } from "lucide-react";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, parseISO } from "date-fns";
+import { ja } from "date-fns/locale";
 
 interface GrowthEntry {
   id: string;
@@ -13,52 +16,6 @@ interface GrowthEntry {
   createdAt: string;
 }
 
-// Simple date utilities
-const formatDate = (date: Date, formatStr: string) => {
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const day = date.getDate();
-  const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
-  
-  if (formatStr === 'yyyy年 MMMM') {
-    return `${year}年 ${monthNames[month]}`;
-  }
-  if (formatStr === 'd') {
-    return day.toString();
-  }
-  if (formatStr === 'yyyy-MM-dd') {
-    return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-  }
-  return date.toISOString();
-};
-
-const isSameMonth = (date1: Date, date2: Date) => {
-  return date1.getFullYear() === date2.getFullYear() && date1.getMonth() === date2.getMonth();
-};
-
-const isToday = (date: Date) => {
-  const today = new Date();
-  return date.toDateString() === today.toDateString();
-};
-
-const getCalendarDays = (date: Date) => {
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const firstDay = new Date(year, month, 1);
-  const startDate = new Date(firstDay);
-  startDate.setDate(startDate.getDate() - firstDay.getDay());
-  
-  const days: Date[] = [];
-  const current = new Date(startDate);
-  
-  for (let i = 0; i < 42; i++) {
-    days.push(new Date(current));
-    current.setDate(current.getDate() + 1);
-  }
-  
-  return days;
-};
-
 export default function CalendarView() {
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -66,17 +23,18 @@ export default function CalendarView() {
     queryKey: ["/api/grows"],
   });
 
-  // Get calendar days for the current month
-  const days = getCalendarDays(currentDate);
+  // 現在の月の日付を取得
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-  // Group entries by date
+  // 日付ごとのエントリをグループ化
   const entriesByDate = entries.reduce((acc, entry) => {
-    const entryDate = new Date(entry.createdAt);
-    const dateKey = formatDate(entryDate, 'yyyy-MM-dd');
-    if (!acc[dateKey]) {
-      acc[dateKey] = [];
+    const date = format(parseISO(entry.createdAt), 'yyyy-MM-dd');
+    if (!acc[date]) {
+      acc[date] = [];
     }
-    acc[dateKey].push(entry);
+    acc[date].push(entry);
     return acc;
   }, {} as Record<string, GrowthEntry[]>);
 
@@ -91,17 +49,6 @@ export default function CalendarView() {
       return newDate;
     });
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-sage flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-leaf/20 border-t-leaf rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-ink/60">読み込み中...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-sage">
@@ -154,7 +101,7 @@ export default function CalendarView() {
           </Button>
           
           <h2 className="text-2xl font-bold text-ink">
-            {formatDate(currentDate, 'yyyy年 MMMM')}
+            {format(currentDate, 'yyyy年 MMMM', { locale: ja })}
           </h2>
           
           <Button
@@ -186,7 +133,7 @@ export default function CalendarView() {
             {/* カレンダー日付 */}
             <div className="grid grid-cols-7 gap-2">
               {days.map((day) => {
-                const dateKey = formatDate(day, 'yyyy-MM-dd');
+                const dateKey = format(day, 'yyyy-MM-dd');
                 const dayEntries = entriesByDate[dateKey] || [];
                 const isCurrentMonth = isSameMonth(day, currentDate);
                 const isDayToday = isToday(day);
@@ -211,7 +158,7 @@ export default function CalendarView() {
                           : 'text-ink/70'
                         : 'text-gray-400'
                     }`}>
-                      {formatDate(day, 'd')}
+                      {format(day, 'd')}
                     </div>
 
                     {/* エントリ表示 */}
@@ -234,12 +181,77 @@ export default function CalendarView() {
                         </div>
                       )}
                     </div>
+
+                    {/* エントリ数バッジ */}
+                    {dayEntries.length > 0 && (
+                      <Badge
+                        variant="secondary"
+                        className="absolute top-1 right-1 bg-green-500 text-white text-xs px-1.5 py-0.5"
+                      >
+                        {dayEntries.length}
+                      </Badge>
+                    )}
                   </div>
                 );
               })}
             </div>
           </CardContent>
         </Card>
+
+        {/* 統計情報 */}
+        <div className="mt-8 grid md:grid-cols-3 gap-4">
+          <Card className="bg-white border-sage-200">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-sage-800">{entries.length}</div>
+              <div className="text-sm text-sage-600">総成長記録</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white border-sage-200">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {Object.keys(entriesByDate).length}
+              </div>
+              <div className="text-sm text-sage-600">記録した日数</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white border-sage-200">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                {format(currentDate, 'MMMM', { locale: ja })}
+              </div>
+              <div className="text-sm text-sage-600">表示中の月</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 今月のエントリがある場合の詳細表示 */}
+        {Object.keys(entriesByDate).length > 0 && (
+          <Card className="mt-8 bg-white border-sage-200">
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-sage-800 mb-4">今月の成長記録</h3>
+              <div className="space-y-4">
+                {entries.slice(0, 5).map((entry) => (
+                  <div key={entry.id} className="border-l-4 border-sage-400 pl-4">
+                    <div className="text-sm text-sage-600 mb-1">
+                      {format(parseISO(entry.createdAt), 'MM月dd日 (E)', { locale: ja })}
+                    </div>
+                    <div className="font-medium text-sage-800 mb-1">{entry.growth}</div>
+                    <div className="text-sm text-sage-600">{entry.hint}</div>
+                  </div>
+                ))}
+                {entries.length > 5 && (
+                  <Link href="/growth">
+                    <Button variant="outline" className="w-full mt-4">
+                      すべての記録を見る ({entries.length}件)
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
