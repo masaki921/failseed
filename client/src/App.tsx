@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "./pages/home";
 import GrowthList from "./pages/growth-list";
-import CalendarView from "./pages/calendar-view";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -13,7 +12,6 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/growth" component={GrowthList} />
-      <Route path="/calendar" component={CalendarView} />
       <Route component={NotFound} />
     </Switch>
   );
