@@ -118,23 +118,15 @@ export default function CalendarView() {
               </div>
             </Link>
             <nav className="flex items-center space-x-4">
-              <Link href="/">
-                <Button 
-                  variant="outline" 
-                  className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl"
-                >
-                  ホーム
-                </Button>
-              </Link>
               <Link href="/growth">
                 <Button 
                   variant="outline"
-                  className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl"
+                  className="text-ink border-leaf/20 hover:bg-soil/20 rounded-2xl"
                 >
                   記録一覧
                 </Button>
               </Link>
-              <Button className="bg-leaf text-white hover:bg-leaf/90 rounded-xl">
+              <Button className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl">
                 カレンダー
               </Button>
             </nav>

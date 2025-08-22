@@ -143,7 +143,7 @@ export default function Home() {
       const response = await fetch('/api/conversation/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message })
+        body: JSON.stringify({ text: message })
       });
       if (!response.ok) throw new Error('Failed to start conversation');
       return response.json();
@@ -172,7 +172,7 @@ export default function Home() {
       const response = await fetch('/api/conversation/continue', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ entryId: currentEntryId, message })
+        body: JSON.stringify({ entryId: currentEntryId, text: message })
       });
       if (!response.ok) throw new Error('Failed to continue conversation');
       return response.json();
@@ -222,7 +222,7 @@ export default function Home() {
                 <Button 
                   onClick={() => finalizeConversationMutation.mutate()}
                   disabled={finalizeConversationMutation.isPending}
-                  className="bg-leaf text-white hover:bg-leaf/90 rounded-xl"
+                  className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl"
                 >
                   学びに変換する
                 </Button>
@@ -281,7 +281,7 @@ export default function Home() {
                 <Button
                   onClick={() => continueConversationMutation.mutate(inputText)}
                   disabled={!inputText.trim() || continueConversationMutation.isPending}
-                  className="bg-leaf text-white hover:bg-leaf/90 rounded-xl"
+                  className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl"
                 >
                   送信
                 </Button>
@@ -309,7 +309,7 @@ export default function Home() {
               <Link href="/growth">
                 <Button 
                   variant="outline" 
-                  className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl"
+                  className="text-ink border-leaf/20 hover:bg-soil/20 rounded-2xl"
                 >
                   記録一覧
                 </Button>

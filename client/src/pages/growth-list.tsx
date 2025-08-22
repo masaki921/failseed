@@ -78,12 +78,12 @@ export default function GrowthList() {
             <Link href="/calendar">
               <Button 
                 variant="outline"
-                className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl"
+                className="text-ink border-leaf/20 hover:bg-soil/20 rounded-2xl"
               >
                 カレンダー
               </Button>
             </Link>
-            <Button className="bg-leaf text-white hover:bg-leaf/90 rounded-xl">
+            <Button className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl">
               記録一覧
             </Button>
           </nav>
