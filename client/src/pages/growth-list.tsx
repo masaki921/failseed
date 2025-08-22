@@ -63,7 +63,8 @@ export default function GrowthList() {
     <div className="min-h-screen bg-sage">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-leaf/10 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
           <Link href="/">
             <div className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity">
               <div className="w-10 h-10 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center">
@@ -94,6 +95,7 @@ export default function GrowthList() {
               記録一覧
             </Button>
           </nav>
+          </div>
         </div>
       </header>
 

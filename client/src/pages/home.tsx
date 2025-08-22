@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle, Calendar, Lightbulb, Target, Sprout } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 // 偉人の名言データ
 const inspirationalQuotes = [
@@ -122,7 +124,27 @@ const getTodaysQuote = () => {
 
 export default function Home() {
   const [text, setText] = useState("");
+  const [isStarting, setIsStarting] = useState(false);
   const todaysQuote = getTodaysQuote();
+
+  const startConversationMutation = useMutation({
+    mutationFn: async (message: string) => {
+      return apiRequest('/api/conversation/start', {
+        method: 'POST',
+        body: { message }
+      });
+    },
+    onSuccess: () => {
+      setText('');
+      setIsStarting(false);
+      window.location.href = '/growth';
+    },
+    onError: (error) => {
+      console.error('対話開始エラー:', error);
+      alert('対話の開始に失敗しました。もう一度お試しください。');
+      setIsStarting(false);
+    }
+  });
 
   return (
     <div className="min-h-screen bg-sage">
@@ -145,14 +167,6 @@ export default function Home() {
                   記録一覧
                 </Button>
               </Link>
-              <Link href="/calendar">
-                <Button 
-                  variant="outline" 
-                  className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl"
-                >
-                  カレンダー
-                </Button>
-              </Link>
             </nav>
           </div>
         </div>
@@ -165,7 +179,7 @@ export default function Home() {
           <CardContent className="p-8">
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center mx-auto mb-6">
-                <Lightbulb className="w-8 h-8 text-white" />
+                <Sprout className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-3xl font-bold text-ink mb-4">
                 失敗を成長の種に変えよう
@@ -181,7 +195,7 @@ export default function Home() {
               <div className="p-6 bg-sage/30 rounded-2xl border-leaf/10">
                 <div className="text-center">
                   <div className="w-12 h-12 bg-leaf/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <MessageCircle className="w-6 h-6 text-leaf" />
+                    <Sprout className="w-6 h-6 text-leaf" />
                   </div>
                   <h3 className="font-semibold text-ink mb-2">1. 体験を話す</h3>
                   <p className="text-sm text-ink/70">
@@ -193,7 +207,7 @@ export default function Home() {
               <div className="p-6 bg-sage/30 rounded-2xl border-leaf/10">
                 <div className="text-center">
                   <div className="w-12 h-12 bg-leaf/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Lightbulb className="w-6 h-6 text-leaf" />
+                    <Sprout className="w-6 h-6 text-leaf" />
                   </div>
                   <h3 className="font-semibold text-ink mb-2">2. 学びを発見</h3>
                   <p className="text-sm text-ink/70">
@@ -205,7 +219,7 @@ export default function Home() {
               <div className="p-6 bg-sage/30 rounded-2xl border-leaf/10">
                 <div className="text-center">
                   <div className="w-12 h-12 bg-leaf/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Target className="w-6 h-6 text-leaf" />
+                    <Sprout className="w-6 h-6 text-leaf" />
                   </div>
                   <h3 className="font-semibold text-ink mb-2">3. 成長を記録</h3>
                   <p className="text-sm text-ink/70">
@@ -257,20 +271,21 @@ export default function Home() {
               <div className="text-center">
                 <Button 
                   size="lg"
-                  disabled={!text.trim()}
+                  disabled={!text.trim() || isStarting}
                   className="px-8 py-3 bg-leaf hover:bg-leaf/90 text-white font-medium rounded-2xl shadow-sm"
                   onClick={() => {
-                    if (text.trim()) {
-                      // テキストを一時的にlocalStorageに保存
-                      localStorage.setItem('chatInput', text);
-                      setText('');
-                      // 対話開始の表示を追加
-                      alert('対話を開始します！FailSeed君があなたの体験を聞いてくれます。');
+                    if (text.trim() && !isStarting) {
+                      setIsStarting(true);
+                      startConversationMutation.mutate(text.trim());
                     }
                   }}
                 >
-                  <MessageCircle className="w-5 h-5 mr-2" />
-                  対話する
+                  {isStarting ? (
+                    <div className="w-5 h-5 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                  )}
+                  {isStarting ? '対話開始中...' : '対話する'}
                 </Button>
               </div>
             </div>
