@@ -195,13 +195,14 @@ export default function ChatScreen() {
             <Button className="bg-leaf text-white hover:bg-leaf/90 rounded-xl">
               対話
             </Button>
-            <Button 
-              variant="outline" 
-              className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl"
-              onClick={() => setLocation('/growth')}
-            >
-              成長記録
-            </Button>
+            <Link href="/growth">
+              <Button 
+                variant="outline" 
+                className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl"
+              >
+                成長記録
+              </Button>
+            </Link>
           </nav>
         </div>
       </header>
