@@ -192,9 +192,14 @@ export default function ChatScreen() {
           </Link>
           
           <nav className="flex items-center space-x-6">
-            <Button className="bg-leaf text-white hover:bg-leaf/90 rounded-xl">
-              対話
-            </Button>
+            <Link href="/">
+              <Button 
+                variant="outline" 
+                className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl"
+              >
+                ホーム
+              </Button>
+            </Link>
             <Link href="/growth">
               <Button 
                 variant="outline" 
@@ -217,7 +222,7 @@ export default function ChatScreen() {
                 <div className="w-16 h-16 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center mx-auto mb-6">
                   <Sprout className="w-8 h-8 text-white" />
                 </div>
-                <h2 className="text-2xl font-semibold text-ink mb-4 text-center">今日はどんなことがありましたか？</h2>
+                <h2 className="text-2xl font-semibold text-ink mb-4 text-center">体験を聞かせてください</h2>
                 <p className="text-center text-ink/70 mb-6 leading-relaxed">
                   どんな小さなことでも大丈夫です。FailSeed君が温かく受け止めます。
                 </p>

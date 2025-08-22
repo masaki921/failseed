@@ -111,14 +111,18 @@ const inspirationalQuotes = [
   { text: "Wake up with determination. Go to bed with satisfaction.", translation: "決意を持って目覚め、満足感を持って眠りにつけ。", author: "Unknown", isJapanese: false }
 ];
 
-// ランダムな名言を取得
-const getRandomQuote = () => {
-  return inspirationalQuotes[Math.floor(Math.random() * inspirationalQuotes.length)];
+// 今日の日付に基づいて固定の名言を取得
+const getTodaysQuote = () => {
+  const today = new Date();
+  const startOfYear = new Date(today.getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((today.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
+  const index = dayOfYear % inspirationalQuotes.length;
+  return inspirationalQuotes[index];
 };
 
 export default function Home() {
   const [text, setText] = useState("");
-  const randomQuote = getRandomQuote();
+  const todaysQuote = getTodaysQuote();
 
   return (
     <div className="min-h-screen bg-sage">
@@ -207,16 +211,16 @@ export default function Home() {
         <Card className="mb-8 bg-sage/20 border-leaf/10">
           <CardContent className="p-6 text-center">
             <blockquote className="text-lg font-medium text-ink mb-2">
-              {randomQuote.isJapanese ? (
-                randomQuote.text
+              {todaysQuote.isJapanese ? (
+                todaysQuote.text
               ) : (
                 <>
-                  <div className="italic mb-1">"{randomQuote.text}"</div>
-                  <div className="text-sm text-ink/70">"{randomQuote.translation}"</div>
+                  <div className="italic mb-1">"{todaysQuote.text}"</div>
+                  <div className="text-sm text-ink/70">"{todaysQuote.translation}"</div>
                 </>
               )}
             </blockquote>
-            <cite className="text-sm text-ink/70">— {randomQuote.author}</cite>
+            <cite className="text-sm text-ink/70">— {todaysQuote.author}</cite>
           </CardContent>
         </Card>
 
@@ -225,7 +229,7 @@ export default function Home() {
           <CardContent className="p-8">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold text-ink mb-2">
-                今日はどんなことがありましたか？
+                体験を聞かせてください
               </h3>
               <p className="text-ink/70">
                 どんな小さなことでも大丈夫です。FailSeed君が温かく受け止めます。

@@ -57,7 +57,7 @@ export default function CalendarView() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/">
-              <Button variant="ghost" className="text-sage-700 hover:text-sage-900">
+              <Button variant="ghost" className="text-ink hover:text-ink/80">
                 <Home className="w-4 h-4 mr-2" />
                 ホーム
               </Button>
