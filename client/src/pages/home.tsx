@@ -122,22 +122,43 @@ const getTodaysQuote = () => {
   return inspirationalQuotes[index];
 };
 
+interface Message {
+  type: 'user' | 'ai';
+  content: string;
+  timestamp: string;
+}
+
 export default function Home() {
   const [text, setText] = useState("");
   const [isStarting, setIsStarting] = useState(false);
+  const [isChatting, setIsChatting] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
+  const [inputText, setInputText] = useState('');
+  const [conversationState, setConversationState] = useState<'initial' | 'ongoing' | 'complete'>('initial');
   const todaysQuote = getTodaysQuote();
 
   const startConversationMutation = useMutation({
     mutationFn: async (message: string) => {
-      return apiRequest('/api/conversation/start', {
+      const response = await fetch('/api/conversation/start', {
         method: 'POST',
-        body: { message }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
       });
+      if (!response.ok) throw new Error('Failed to start conversation');
+      return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (response: any) => {
+      setMessages(prev => [
+        ...prev,
+        { type: 'user', content: text, timestamp: new Date().toISOString() },
+        { type: 'ai', content: response.message, timestamp: new Date().toISOString() }
+      ]);
+      setCurrentEntryId(response.entryId);
+      setConversationState('ongoing');
       setText('');
       setIsStarting(false);
-      window.location.href = '/growth';
+      setIsChatting(true);
     },
     onError: (error) => {
       console.error('対話開始エラー:', error);
@@ -145,6 +166,132 @@ export default function Home() {
       setIsStarting(false);
     }
   });
+
+  const continueConversationMutation = useMutation({
+    mutationFn: async (message: string) => {
+      const response = await fetch('/api/conversation/continue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entryId: currentEntryId, message })
+      });
+      if (!response.ok) throw new Error('Failed to continue conversation');
+      return response.json();
+    },
+    onSuccess: (response: any) => {
+      setMessages(prev => [
+        ...prev,
+        { type: 'user', content: inputText, timestamp: new Date().toISOString() },
+        { type: 'ai', content: response.message, timestamp: new Date().toISOString() }
+      ]);
+      setInputText('');
+    }
+  });
+
+  const finalizeConversationMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/conversation/finalize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entryId: currentEntryId })
+      });
+      if (!response.ok) throw new Error('Failed to finalize conversation');
+      return response.json();
+    },
+    onSuccess: () => {
+      setConversationState('complete');
+      setTimeout(() => {
+        window.location.href = '/growth';
+      }, 2000);
+    }
+  });
+
+  if (isChatting) {
+    return (
+      <div className="min-h-screen bg-sage">
+        {/* チャットヘッダー */}
+        <div className="border-b border-leaf/10 bg-white/80 backdrop-blur-sm">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center">
+                  <Sprout className="w-6 h-6 text-white" />
+                </div>
+                <h1 className="text-xl font-semibold text-ink">FailSeed君との対話</h1>
+              </div>
+              {conversationState === 'ongoing' && (
+                <Button 
+                  onClick={() => finalizeConversationMutation.mutate()}
+                  disabled={finalizeConversationMutation.isPending}
+                  className="bg-leaf text-white hover:bg-leaf/90 rounded-xl"
+                >
+                  学びに変換する
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* チャットエリア */}
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          <div className="space-y-4 mb-6">
+            {messages.map((message, index) => (
+              <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                  message.type === 'user' 
+                    ? 'bg-leaf text-white' 
+                    : 'bg-white text-ink border border-leaf/20'
+                }`}>
+                  {message.content}
+                </div>
+              </div>
+            ))}
+            
+            {continueConversationMutation.isPending && (
+              <div className="flex justify-start">
+                <div className="bg-white text-ink border border-leaf/20 px-4 py-2 rounded-2xl">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-leaf/30 border-t-leaf rounded-full animate-spin"></div>
+                    <span>FailSeed君が考えています...</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {conversationState === 'complete' && (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Target className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-ink mb-2">学びの記録が完成しました！</h3>
+                <p className="text-ink/70">記録一覧ページに移動します...</p>
+              </div>
+            )}
+          </div>
+
+          {conversationState === 'ongoing' && (
+            <div className="bg-white rounded-2xl border border-leaf/20 p-4">
+              <div className="flex space-x-4">
+                <Textarea
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  placeholder="FailSeed君と続きを話してください..."
+                  className="flex-1 border-leaf/20 rounded-xl"
+                  rows={3}
+                />
+                <Button
+                  onClick={() => continueConversationMutation.mutate(inputText)}
+                  disabled={!inputText.trim() || continueConversationMutation.isPending}
+                  className="bg-leaf text-white hover:bg-leaf/90 rounded-xl"
+                >
+                  送信
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-sage">
@@ -195,7 +342,7 @@ export default function Home() {
               <div className="p-6 bg-sage/30 rounded-2xl border-leaf/10">
                 <div className="text-center">
                   <div className="w-12 h-12 bg-leaf/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Sprout className="w-6 h-6 text-leaf" />
+                    <MessageCircle className="w-6 h-6 text-leaf" />
                   </div>
                   <h3 className="font-semibold text-ink mb-2">1. 体験を話す</h3>
                   <p className="text-sm text-ink/70">
@@ -207,7 +354,7 @@ export default function Home() {
               <div className="p-6 bg-sage/30 rounded-2xl border-leaf/10">
                 <div className="text-center">
                   <div className="w-12 h-12 bg-leaf/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Sprout className="w-6 h-6 text-leaf" />
+                    <Lightbulb className="w-6 h-6 text-leaf" />
                   </div>
                   <h3 className="font-semibold text-ink mb-2">2. 学びを発見</h3>
                   <p className="text-sm text-ink/70">
@@ -219,7 +366,7 @@ export default function Home() {
               <div className="p-6 bg-sage/30 rounded-2xl border-leaf/10">
                 <div className="text-center">
                   <div className="w-12 h-12 bg-leaf/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Sprout className="w-6 h-6 text-leaf" />
+                    <Target className="w-6 h-6 text-leaf" />
                   </div>
                   <h3 className="font-semibold text-ink mb-2">3. 成長を記録</h3>
                   <p className="text-sm text-ink/70">

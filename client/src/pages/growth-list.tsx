@@ -75,14 +75,6 @@ export default function GrowthList() {
           </Link>
           
           <nav className="flex items-center space-x-4">
-            <Link href="/">
-              <Button 
-                variant="outline" 
-                className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl"
-              >
-                ホーム
-              </Button>
-            </Link>
             <Link href="/calendar">
               <Button 
                 variant="outline"
