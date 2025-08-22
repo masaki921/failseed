@@ -172,7 +172,7 @@ export default function Home() {
       const response = await fetch('/api/conversation/continue', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ entryId: currentEntryId, text: message })
+        body: JSON.stringify({ entryId: currentEntryId, message: message })
       });
       if (!response.ok) throw new Error('Failed to continue conversation');
       return response.json();
@@ -218,15 +218,6 @@ export default function Home() {
                 </div>
                 <h1 className="text-xl font-semibold text-ink">FailSeed君との対話</h1>
               </div>
-              {conversationState === 'ongoing' && (
-                <Button 
-                  onClick={() => finalizeConversationMutation.mutate()}
-                  disabled={finalizeConversationMutation.isPending}
-                  className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl"
-                >
-                  学びに変換する
-                </Button>
-              )}
             </div>
           </div>
         </div>
@@ -269,21 +260,32 @@ export default function Home() {
           </div>
 
           {conversationState === 'ongoing' && (
-            <div className="bg-white rounded-2xl border border-leaf/20 p-4">
-              <div className="flex space-x-4">
-                <Textarea
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  placeholder="FailSeed君と続きを話してください..."
-                  className="flex-1 border-leaf/20 rounded-xl"
-                  rows={3}
-                />
-                <Button
-                  onClick={() => continueConversationMutation.mutate(inputText)}
-                  disabled={!inputText.trim() || continueConversationMutation.isPending}
-                  className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl"
+            <div className="space-y-4">
+              <div className="bg-white rounded-2xl border border-leaf/20 p-4">
+                <div className="flex space-x-4">
+                  <Textarea
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    placeholder="FailSeed君と続きを話してください..."
+                    className="flex-1 border-leaf/20 rounded-xl"
+                    rows={3}
+                  />
+                  <Button
+                    onClick={() => continueConversationMutation.mutate(inputText)}
+                    disabled={!inputText.trim() || continueConversationMutation.isPending}
+                    className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl"
+                  >
+                    送信
+                  </Button>
+                </div>
+              </div>
+              <div className="text-center">
+                <Button 
+                  onClick={() => finalizeConversationMutation.mutate()}
+                  disabled={finalizeConversationMutation.isPending}
+                  className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl px-8"
                 >
-                  送信
+                  学びに変換する
                 </Button>
               </div>
             </div>
