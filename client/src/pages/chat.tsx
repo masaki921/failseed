@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,7 +14,7 @@ import {
 } from "@shared/schema";
 import ChatMessage from "../components/chat-message";
 import LoadingIndicator from "../components/loading-indicator";
-import { Sprout, ArrowRight, FileText } from "lucide-react";
+import { Sprout, ArrowRight, FileText, Home } from "lucide-react";
 
 interface Message {
   type: 'user' | 'ai';
@@ -29,7 +29,10 @@ interface SafetyError {
 }
 
 export default function ChatScreen() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
+  // URLパラメータから初期テキストを取得
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialTextFromUrl = urlParams.get('initialText') || '';
   const [conversationState, setConversationState] = useState<'initial' | 'ongoing' | 'finalizing' | 'complete'>('initial');
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
@@ -37,6 +40,14 @@ export default function ChatScreen() {
   const [safetyError, setSafetyError] = useState<SafetyError | null>(null);
   const [conversationTurn, setConversationTurn] = useState(0);
 
+  // 初期テキストの設定
+  useEffect(() => {
+    if (initialTextFromUrl && inputText === "") {
+      setInputText(initialTextFromUrl);
+      // URLをクリーンアップ
+      window.history.replaceState(null, '', '/chat');
+    }
+  }, [initialTextFromUrl, inputText]);
 
   const startConversationMutation = useMutation({
     mutationFn: async (data: StartConversationInput) => {
@@ -171,12 +182,14 @@ export default function ChatScreen() {
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-leaf/10 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-leaf rounded-full flex items-center justify-center">
-              <Sprout className="w-5 h-5 text-white" />
+          <Link href="/">
+            <div className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity">
+              <div className="w-8 h-8 bg-leaf rounded-full flex items-center justify-center">
+                <Sprout className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-xl font-semibold text-ink">FailSeed</h1>
             </div>
-            <h1 className="text-xl font-semibold text-ink">FailSeed</h1>
-          </div>
+          </Link>
           
           <nav className="flex items-center space-x-6">
             <Button className="bg-leaf text-white hover:bg-leaf/90 rounded-xl">

@@ -8,6 +8,14 @@ FailSeed is a full-stack web application designed to help HSP (Highly Sensitive 
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Features Added (2025-08-23)
+
+- **Home Page**: Dedicated landing page with concept explanation, inspirational quotes, and intuitive navigation
+- **Calendar View**: Visual calendar display of growth records with monthly navigation and statistics
+- **Inspirational Quotes**: Rotating quotes from world leaders and Japanese figures with translations
+- **Enhanced Navigation**: Clickable logo headers for intuitive home navigation across all pages
+- **Multi-view Records**: Users can view growth records in both list and calendar formats
+
 ## System Architecture
 
 ### Frontend Architecture

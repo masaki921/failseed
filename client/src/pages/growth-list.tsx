@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { apiRequest } from "@/lib/queryClient";
 import { type Entry, type UpdateHint } from "@shared/schema";
 import GrowthEntry from "../components/growth-entry";
-import { Sprout, MessageCircle } from "lucide-react";
+import { Sprout, MessageCircle, Calendar, Home } from "lucide-react";
 
 export default function GrowthList() {
   const [, setLocation] = useLocation();
@@ -45,23 +45,34 @@ export default function GrowthList() {
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-leaf/10 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-leaf rounded-full flex items-center justify-center">
-              <Sprout className="w-5 h-5 text-white" />
+          <Link href="/">
+            <div className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity">
+              <div className="w-8 h-8 bg-leaf rounded-full flex items-center justify-center">
+                <Sprout className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-xl font-semibold text-ink">FailSeed</h1>
             </div>
-            <h1 className="text-xl font-semibold text-ink">FailSeed</h1>
-          </div>
+          </Link>
           
-          <nav className="flex items-center space-x-6">
+          <nav className="flex items-center space-x-4">
             <Button 
               variant="outline" 
               className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl"
-              onClick={() => setLocation('/')}
+              onClick={() => setLocation('/chat')}
             >
               対話
             </Button>
+            <Link href="/calendar">
+              <Button 
+                variant="outline"
+                className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl"
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                カレンダー
+              </Button>
+            </Link>
             <Button className="bg-leaf text-white hover:bg-leaf/90 rounded-xl">
-              成長記録
+              リスト
             </Button>
           </nav>
         </div>
