@@ -213,8 +213,8 @@ export default function Home() {
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center">
-                  <Sprout className="w-6 h-6 text-white" />
+                <div className="w-10 h-10 gradient-growth rounded-full flex items-center justify-center">
+                  <Sprout className="w-6 h-6 text-sage" />
                 </div>
                 <h1 className="text-xl font-semibold text-ink">FailSeed君との対話</h1>
               </div>
@@ -229,8 +229,8 @@ export default function Home() {
               <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
                   message.type === 'user' 
-                    ? 'bg-leaf text-white' 
-                    : 'bg-white text-ink border border-leaf/20'
+                    ? 'gradient-growth text-sage shadow-sm' 
+                    : 'bg-white text-ink border border-sprout/25 shadow-sm'
                 }`}>
                   {message.content}
                 </div>
@@ -239,9 +239,9 @@ export default function Home() {
             
             {continueConversationMutation.isPending && (
               <div className="flex justify-start">
-                <div className="bg-white text-ink border border-leaf/20 px-4 py-2 rounded-2xl">
+                <div className="bg-white text-ink border border-sprout/25 px-4 py-2 rounded-2xl shadow-sm">
                   <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-leaf/30 border-t-leaf rounded-full animate-spin"></div>
+                    <div className="w-4 h-4 border-2 border-sprout/30 border-t-sprout rounded-full animate-spin"></div>
                     <span>FailSeed君が考えています...</span>
                   </div>
                 </div>
@@ -250,7 +250,7 @@ export default function Home() {
 
             {conversationState === 'complete' && (
               <div className="text-center py-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 gradient-bloom rounded-full flex items-center justify-center mx-auto mb-4">
                   <Target className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-ink mb-2">学びの記録が完成しました！</h3>
@@ -261,7 +261,7 @@ export default function Home() {
 
           {conversationState === 'ongoing' && (
             <div className="space-y-4">
-              <div className="bg-white rounded-2xl border border-leaf/20 p-4">
+              <div className="bg-white rounded-2xl border border-sprout/25 p-4 shadow-sm">
                 <div className="flex space-x-4">
                   <Textarea
                     value={inputText}
@@ -273,7 +273,7 @@ export default function Home() {
                   <Button
                     onClick={() => continueConversationMutation.mutate(inputText)}
                     disabled={!inputText.trim() || continueConversationMutation.isPending}
-                    className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl"
+                    className="gradient-growth text-sage hover:opacity-90 rounded-2xl shadow-sm"
                   >
                     送信
                   </Button>
@@ -283,7 +283,7 @@ export default function Home() {
                 <Button 
                   onClick={() => finalizeConversationMutation.mutate()}
                   disabled={finalizeConversationMutation.isPending}
-                  className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl px-8"
+                  className="gradient-bloom text-sage hover:opacity-90 rounded-2xl px-8 shadow-md"
                 >
                   学びに変換する
                 </Button>
@@ -302,8 +302,8 @@ export default function Home() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center">
-                <Sprout className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 gradient-growth rounded-full flex items-center justify-center">
+                <Sprout className="w-6 h-6 text-sage" />
               </div>
               <h1 className="text-xl font-semibold text-ink">FailSeed</h1>
             </div>
@@ -311,7 +311,7 @@ export default function Home() {
               <Link href="/growth">
                 <Button 
                   variant="outline" 
-                  className="text-ink border-leaf/20 hover:bg-soil/20 rounded-2xl"
+                  className="text-ink border-sprout/30 hover:bg-earth/20 rounded-2xl"
                 >
                   記録一覧
                 </Button>
@@ -327,8 +327,8 @@ export default function Home() {
         <Card className="rounded-3xl shadow-sm border-leaf/5 mb-8">
           <CardContent className="p-8">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center mx-auto mb-6">
-                <Sprout className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 gradient-seed rounded-full flex items-center justify-center mx-auto mb-6">
+                <Sprout className="w-8 h-8 text-sage" />
               </div>
               <h2 className="text-3xl font-bold text-ink mb-4">
                 失敗を成長の種に変えよう
@@ -341,14 +341,14 @@ export default function Home() {
 
             {/* プロセス説明（イラスト風） */}
             <div className="grid md:grid-cols-3 gap-6 mb-8">
-              <div className="p-6 bg-sage/30 rounded-2xl border-leaf/10">
+              <div className="p-6 bg-white/60 rounded-2xl border-earth/20 hover:bg-earth/5 transition-colors shadow-sm">
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-leaf/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <MessageCircle className="w-6 h-6 text-leaf" />
+                  <div className="w-12 h-12 bg-earth rounded-full flex items-center justify-center mx-auto mb-4">
+                    <MessageCircle className="w-6 h-6 text-sage" />
                   </div>
-                  <h3 className="font-semibold text-ink mb-2">1. 体験を話す</h3>
+                  <h3 className="font-semibold text-ink mb-2">🌱 1. 種を植える</h3>
                   <p className="text-sm text-ink/70">
-                    FailSeed君と自然に対話しながら、あなたの体験を共有します
+                    つらかった出来事や失敗という「種」を、FailSeed君と一緒に大切に植えましょう
                   </p>
                 </div>
               </div>
