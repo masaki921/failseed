@@ -139,8 +139,7 @@ export default function Home() {
             <nav className="flex items-center space-x-4">
               <Link href="/growth">
                 <Button variant="ghost" className="text-ink hover:text-ink/80">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  記録を見る
+                  記録一覧
                 </Button>
               </Link>
             </nav>
@@ -245,20 +244,16 @@ export default function Home() {
               />
 
               <div className="text-center">
-                <Button 
-                  size="lg"
-                  disabled={!text.trim()}
-                  className="px-8 py-3 bg-leaf hover:bg-leaf/90 text-white font-medium rounded-2xl shadow-sm"
-                  onClick={() => {
-                    if (text.trim()) {
-                      // 直接開始せずチャット画面に遷移してテキストを設定
-                      window.location.href = `/chat?initialText=${encodeURIComponent(text)}`;
-                    }
-                  }}
-                >
-                  <MessageCircle className="w-5 h-5 mr-2" />
-                  FailSeed君と話す
-                </Button>
+                <Link href="/chat">
+                  <Button 
+                    size="lg"
+                    disabled={!text.trim()}
+                    className="px-8 py-3 bg-leaf hover:bg-leaf/90 text-white font-medium rounded-2xl shadow-sm"
+                  >
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    対話する
+                  </Button>
+                </Link>
               </div>
             </div>
           </CardContent>

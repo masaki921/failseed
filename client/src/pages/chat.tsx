@@ -205,7 +205,7 @@ export default function ChatScreen() {
                 variant="outline" 
                 className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl"
               >
-                成長記録
+                記録一覧
               </Button>
             </Link>
           </nav>

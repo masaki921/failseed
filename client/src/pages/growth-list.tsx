@@ -131,13 +131,14 @@ export default function GrowthList() {
                 </div>
                 <h3 className="text-xl font-medium text-ink mb-2">まだ成長の記録がありません</h3>
                 <p className="text-ink/60 mb-6">対話を通じて、最初の成長を記録してみませんか？</p>
-                <Button 
-                  onClick={() => setLocation('/')}
-                  className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl"
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  対話を始める
-                </Button>
+                <Link href="/">
+                  <Button 
+                    className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    対話する
+                  </Button>
+                </Link>
               </div>
             )}
           </CardContent>

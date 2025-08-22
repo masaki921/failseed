@@ -63,8 +63,8 @@ export default function CalendarView() {
               </Button>
             </Link>
             <div className="flex items-center space-x-2">
-              <Calendar className="w-6 h-6 text-sage-600" />
-              <h1 className="text-2xl font-bold text-sage-800">成長カレンダー</h1>
+              <Calendar className="w-6 h-6 text-ink" />
+              <h1 className="text-2xl font-bold text-ink">記録カレンダー</h1>
             </div>
             <Link href="/growth">
               <Button variant="ghost" className="text-ink hover:text-ink/80">
@@ -81,26 +81,26 @@ export default function CalendarView() {
           <Button
             variant="outline"
             onClick={() => navigateMonth('prev')}
-            className="border-sage-300 hover:bg-sage-50"
+            className="border-leaf/30 hover:bg-leaf/10"
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
           
-          <h2 className="text-2xl font-bold text-sage-800">
+          <h2 className="text-2xl font-bold text-ink">
             {format(currentDate, 'yyyy年 MMMM', { locale: ja })}
           </h2>
           
           <Button
             variant="outline"
             onClick={() => navigateMonth('next')}
-            className="border-sage-300 hover:bg-sage-50"
+            className="border-leaf/30 hover:bg-leaf/10"
           >
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
 
         {/* カレンダーグリッド */}
-        <Card className="bg-white border-sage-200 shadow-lg">
+        <Card className="bg-white border-leaf/20 shadow-lg rounded-3xl">
           <CardContent className="p-6">
             {/* 曜日ヘッダー */}
             <div className="grid grid-cols-7 gap-2 mb-4">
@@ -108,7 +108,7 @@ export default function CalendarView() {
                 <div
                   key={day}
                   className={`text-center text-sm font-medium p-2 ${
-                    index === 0 ? 'text-red-600' : index === 6 ? 'text-blue-600' : 'text-sage-700'
+                    index === 0 ? 'text-red-600' : index === 6 ? 'text-blue-600' : 'text-ink'
                   }`}
                 >
                   {day}
@@ -130,18 +130,18 @@ export default function CalendarView() {
                     className={`min-h-[120px] p-2 border rounded-lg relative ${
                       isCurrentMonth
                         ? isDayToday
-                          ? 'bg-sage-100 border-sage-400'
+                          ? 'bg-leaf/10 border-leaf/30'
                           : dayEntries.length > 0
-                          ? 'bg-green-50 border-green-200 hover:bg-green-100'
-                          : 'bg-white border-sage-200 hover:bg-sage-50'
+                          ? 'bg-leaf/5 border-leaf/20 hover:bg-leaf/10'
+                          : 'bg-white border-leaf/10 hover:bg-leaf/5'
                         : 'bg-gray-50 border-gray-200'
                     } ${dayEntries.length > 0 ? 'cursor-pointer' : ''}`}
                   >
                     <div className={`text-sm font-medium ${
                       isCurrentMonth
                         ? isDayToday
-                          ? 'text-sage-800'
-                          : 'text-sage-700'
+                          ? 'text-ink'
+                          : 'text-ink/70'
                         : 'text-gray-400'
                     }`}>
                       {format(day, 'd')}
@@ -152,7 +152,7 @@ export default function CalendarView() {
                       {dayEntries.slice(0, 3).map((entry, index) => (
                         <div
                           key={entry.id}
-                          className="text-xs p-1 bg-green-200 text-green-800 rounded truncate cursor-pointer hover:bg-green-300 transition-colors"
+                          className="text-xs p-1 bg-leaf/20 text-leaf rounded truncate cursor-pointer hover:bg-leaf/30 transition-colors"
                           title={entry.originalMessage}
                           onClick={() => window.location.href = `/growth#${entry.id}`}
                         >
@@ -162,7 +162,7 @@ export default function CalendarView() {
                         </div>
                       ))}
                       {dayEntries.length > 3 && (
-                        <div className="text-xs text-sage-600 font-medium">
+                        <div className="text-xs text-ink/60 font-medium">
                           +{dayEntries.length - 3}件
                         </div>
                       )}
