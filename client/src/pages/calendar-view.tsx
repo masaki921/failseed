@@ -51,9 +51,9 @@ export default function CalendarView() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sage-50 to-sage-100">
+    <div className="min-h-screen bg-sage">
       {/* ヘッダー */}
-      <div className="border-b border-sage-200 bg-white/80 backdrop-blur-sm">
+      <div className="border-b border-leaf/10 bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/">
@@ -67,8 +67,8 @@ export default function CalendarView() {
               <h1 className="text-2xl font-bold text-sage-800">成長カレンダー</h1>
             </div>
             <Link href="/growth">
-              <Button variant="ghost" className="text-sage-700 hover:text-sage-900">
-                リスト表示
+              <Button variant="ghost" className="text-ink hover:text-ink/80">
+                記録一覧
               </Button>
             </Link>
           </div>
@@ -152,10 +152,13 @@ export default function CalendarView() {
                       {dayEntries.slice(0, 3).map((entry, index) => (
                         <div
                           key={entry.id}
-                          className="text-xs p-1 bg-green-200 text-green-800 rounded truncate"
+                          className="text-xs p-1 bg-green-200 text-green-800 rounded truncate cursor-pointer hover:bg-green-300 transition-colors"
                           title={entry.originalMessage}
+                          onClick={() => window.location.href = `/growth#${entry.id}`}
                         >
-                          成長記録 #{index + 1}
+                          {entry.originalMessage.length > 12 
+                            ? entry.originalMessage.slice(0, 12) + "..." 
+                            : entry.originalMessage}
                         </div>
                       ))}
                       {dayEntries.length > 3 && (

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, Link } from "wouter";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { apiRequest } from "@/lib/queryClient";
@@ -28,6 +29,24 @@ export default function GrowthList() {
   const handleHintAction = (entryId: string, action: 'tried' | 'skipped') => {
     updateHintMutation.mutate({ id: entryId, hintStatus: action });
   };
+
+  // URLハッシュで特定の記録にスクロール
+  useEffect(() => {
+    if (entries.length > 0) {
+      const hash = window.location.hash.slice(1);
+      if (hash) {
+        const element = document.getElementById(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // ハイライト効果を追加
+          element.classList.add('ring-2', 'ring-leaf', 'ring-opacity-50');
+          setTimeout(() => {
+            element.classList.remove('ring-2', 'ring-leaf', 'ring-opacity-50');
+          }, 3000);
+        }
+      }
+    }
+  }, [entries]);
 
   if (isLoading) {
     return (
@@ -73,7 +92,7 @@ export default function GrowthList() {
               </Button>
             </Link>
             <Button className="bg-leaf text-white hover:bg-leaf/90 rounded-xl">
-              リスト
+              記録一覧
             </Button>
           </nav>
         </div>
@@ -84,7 +103,7 @@ export default function GrowthList() {
           <CardContent className="p-8">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-2xl font-semibold text-ink mb-2">成長の記録</h2>
+                <h2 className="text-2xl font-semibold text-ink mb-2">あなたの振り返り記録</h2>
                 <p className="text-ink/70">あなたが育てた気づきと学びたちです</p>
               </div>
               <div className="bg-soil/30 px-4 py-2 rounded-xl">
@@ -96,12 +115,13 @@ export default function GrowthList() {
             {entries.length > 0 ? (
               <div className="space-y-4">
                 {(entries as Entry[]).map((entry) => (
-                  <GrowthEntry 
-                    key={entry.id} 
-                    entry={entry} 
-                    onHintAction={handleHintAction}
-                    isUpdating={updateHintMutation.isPending}
-                  />
+                  <div key={entry.id} id={entry.id}>
+                    <GrowthEntry 
+                      entry={entry} 
+                      onHintAction={handleHintAction}
+                      isUpdating={updateHintMutation.isPending}
+                    />
+                  </div>
                 ))}
               </div>
             ) : (

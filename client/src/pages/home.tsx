@@ -251,6 +251,7 @@ export default function Home() {
                   className="px-8 py-3 bg-leaf hover:bg-leaf/90 text-white font-medium rounded-2xl shadow-sm"
                   onClick={() => {
                     if (text.trim()) {
+                      // 直接開始せずチャット画面に遷移してテキストを設定
                       window.location.href = `/chat?initialText=${encodeURIComponent(text)}`;
                     }
                   }}
