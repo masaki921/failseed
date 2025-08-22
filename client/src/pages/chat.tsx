@@ -211,57 +211,16 @@ export default function ChatScreen() {
         {/* Welcome Card */}
         {messages.length === 0 && (
           <>
-            {/* App Introduction */}
+            {/* Start Conversation Card */}
             <Card className="rounded-3xl shadow-sm border-leaf/5 mb-6">
               <CardContent className="p-8">
                 <div className="w-16 h-16 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center mx-auto mb-6">
                   <Sprout className="w-8 h-8 text-white" />
                 </div>
-                <h2 className="text-2xl font-semibold text-ink mb-4 text-center">FailSeedへようこそ</h2>
-                
-                <div className="space-y-6 text-ink/80">
-                  <div className="text-center">
-                    <p className="text-lg leading-relaxed">
-                      うまくいかなかった体験を、成長の種に変える場所です
-                    </p>
-                  </div>
-                  
-                  <div className="mt-8">
-                    <div className="space-y-3">
-                      <h3 className="font-semibold text-ink flex items-center">
-                        <div className="w-2 h-2 bg-soil rounded-full mr-3"></div>
-                        FailSeedの価値観
-                      </h3>
-                      <ul className="space-y-2 text-sm">
-                        <li>• 失敗は成長の種である</li>
-                        <li>• どんな体験にも学びがある</li>
-                        <li>• 自分らしさを大切にする</li>
-                        <li>• 優しさと受容の対話</li>
-                      </ul>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-sage/50 rounded-2xl p-6 mt-6">
-                    <h3 className="font-semibold text-ink mb-3">使い方</h3>
-                    <div className="space-y-2 text-sm">
-                      <p><span className="font-medium">1. 体験を話す：</span> うまくいかなかった出来事を、どんな小さなことでも気軽にお話しください</p>
-                      <p><span className="font-medium">2. 対話する：</span> FailSeed君が優しく聞き、一緒に原因を探ります</p>
-                      <p><span className="font-medium">3. 学びに変換：</span> 体験から得られた成長や気づきを記録として残せます</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Start Conversation Card */}
-            <Card className="rounded-3xl shadow-sm border-leaf/5 mb-6">
-              <CardContent className="p-8">
-                <div className="text-center mb-6">
-                  <p className="text-ink/70 leading-relaxed">
-                    どんな小さな出来事でも大丈夫です。<br />
-                    一緒に成長の芽を見つけてみましょう。
-                  </p>
-                </div>
+                <h2 className="text-2xl font-semibold text-ink mb-4 text-center">今日はどんなことがありましたか？</h2>
+                <p className="text-center text-ink/70 mb-6 leading-relaxed">
+                  どんな小さなことでも大丈夫です。FailSeed君が温かく受け止めます。
+                </p>
                 
                 {/* Chat Input */}
                 <div>
@@ -279,8 +238,8 @@ export default function ChatScreen() {
                       disabled={!inputText.trim() || isLoading}
                       className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl"
                     >
-                      お話しする
-                      <ArrowRight className="w-4 h-4 ml-2" />
+                      {isLoading ? <LoadingIndicator /> : <ArrowRight className="w-4 h-4 mr-2" />}
+                      {isLoading ? "送信中..." : "話し始める"}
                     </Button>
                   </div>
                 </div>
