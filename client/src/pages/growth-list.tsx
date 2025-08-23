@@ -163,23 +163,25 @@ export default function GrowthList() {
     return (
       <div>
         {/* カレンダーヘッダー */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4 md:mb-6">
           <Button
             variant="outline"
             onClick={() => navigateMonth('prev')}
-            className="border-leaf/30 hover:bg-leaf/10 rounded-2xl"
+            className="border-leaf/30 hover:bg-leaf/10 rounded-2xl px-2 md:px-3"
+            size="sm"
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
           
-          <h2 className="text-2xl font-bold text-ink">
+          <h2 className="text-lg md:text-2xl font-bold text-ink">
             {formatDate(currentDate, 'yyyy年 MMMM')}
           </h2>
           
           <Button
             variant="outline"
             onClick={() => navigateMonth('next')}
-            className="border-leaf/30 hover:bg-leaf/10 rounded-2xl"
+            className="border-leaf/30 hover:bg-leaf/10 rounded-2xl px-2 md:px-3"
+            size="sm"
           >
             <ChevronRight className="w-4 h-4" />
           </Button>
@@ -187,7 +189,7 @@ export default function GrowthList() {
 
         {/* カレンダーグリッド */}
         <Card className="bg-white border-leaf/20 shadow-lg rounded-3xl">
-          <CardContent className="p-6">
+          <CardContent className="p-3 md:p-6">
             {/* 曜日ヘッダー */}
             <div className="grid grid-cols-7 gap-2 mb-4">
               {['日', '月', '火', '水', '木', '金', '土'].map((day, index) => (
@@ -213,7 +215,7 @@ export default function GrowthList() {
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`min-h-[120px] p-2 border rounded-lg relative ${
+                    className={`min-h-[80px] md:min-h-[120px] p-1 md:p-2 border rounded-lg relative ${
                       isCurrentMonth
                         ? isDayToday
                           ? 'bg-leaf/10 border-leaf/30'
@@ -238,7 +240,7 @@ export default function GrowthList() {
                       {dayEntries.slice(0, 3).map((entry, index) => (
                         <div
                           key={entry.id}
-                          className="text-xs p-1 bg-leaf/20 text-leaf rounded truncate cursor-pointer hover:bg-leaf/30 transition-colors"
+                          className="text-xs p-1 bg-leaf/20 text-leaf rounded truncate cursor-pointer hover:bg-leaf/30 transition-colors break-all"
                           title={entry.text}
                           onClick={() => {
                             setViewMode('list');
@@ -254,8 +256,8 @@ export default function GrowthList() {
                             }, 100);
                           }}
                         >
-                          {entry.text.length > 12 
-                            ? entry.text.slice(0, 12) + "..." 
+                          {entry.text.length > 8
+                            ? entry.text.slice(0, 8) + "..."
                             : entry.text}
                         </div>
                       ))}
@@ -310,16 +312,16 @@ export default function GrowthList() {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
+      <main className="max-w-6xl mx-auto px-3 py-4 md:px-4 md:py-6">
         <Card className="rounded-3xl shadow-sm border-leaf/5 mb-6">
-          <CardContent className="p-8">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-semibold text-ink mb-2">あなたの振り返り記録</h2>
-                <p className="text-ink/70">あなたが育てた気づきと学びたちです</p>
+          <CardContent className="p-4 md:p-8">
+            <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0 mb-6">
+              <div className="min-w-0">
+                <h2 className="text-lg md:text-2xl font-semibold text-ink mb-1 md:mb-2 break-words">あなたの振り返り記録</h2>
+                <p className="text-sm md:text-base text-ink/70 break-words">あなたが育てた気づきと学びたちです</p>
               </div>
-              <div className="flex items-center space-x-4">
-                <div className="bg-soil/30 px-4 py-2 rounded-xl">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 shrink-0">
+                <div className="bg-soil/30 px-3 py-2 rounded-xl text-center sm:text-left">
                   <span className="text-ink font-medium">{entries.length}</span>
                   <span className="text-ink/70 ml-1">個の成長</span>
                 </div>
@@ -328,19 +330,19 @@ export default function GrowthList() {
                     variant={viewMode === 'list' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('list')}
-                    className={`rounded-lg px-3 ${viewMode === 'list' ? 'bg-leaf text-white hover:bg-leaf/90' : 'text-ink/70 hover:text-ink hover:bg-leaf/10'}`}
+                    className={`rounded-lg px-2 sm:px-3 flex-1 ${viewMode === 'list' ? 'bg-leaf text-white hover:bg-leaf/90' : 'text-ink/70 hover:text-ink hover:bg-leaf/10'}`}
                   >
                     <List className="w-4 h-4 mr-1" />
-                    リスト
+                    <span className="text-xs sm:text-sm">リスト</span>
                   </Button>
                   <Button
                     variant={viewMode === 'calendar' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('calendar')}
-                    className={`rounded-lg px-3 ${viewMode === 'calendar' ? 'bg-leaf text-white hover:bg-leaf/90' : 'text-ink/70 hover:text-ink hover:bg-leaf/10'}`}
+                    className={`rounded-lg px-2 sm:px-3 flex-1 ${viewMode === 'calendar' ? 'bg-leaf text-white hover:bg-leaf/90' : 'text-ink/70 hover:text-ink hover:bg-leaf/10'}`}
                   >
                     <Calendar className="w-4 h-4 mr-1" />
-                    カレンダー
+                    <span className="text-xs sm:text-sm">カレンダー</span>
                   </Button>
                 </div>
               </div>
