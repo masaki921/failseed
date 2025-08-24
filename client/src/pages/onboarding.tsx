@@ -187,77 +187,79 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-sage flex items-center justify-center p-4">
+    <div className="min-h-screen bg-sage flex items-center justify-center p-3 sm:p-4">
       <div className="w-full max-w-4xl">
         {/* ヘッダー */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center">
-              <Sprout className="w-7 h-7 text-white" />
+        <div className="text-center mb-4 sm:mb-6 md:mb-8">
+          <div className="flex items-center justify-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center">
+              <Sprout className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-ink">FailSeed</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-ink">FailSeed</h1>
           </div>
           
           {/* プログレスバー */}
-          <div className="flex items-center justify-center space-x-2 mb-2">
+          <div className="flex items-center justify-center space-x-1.5 sm:space-x-2 mb-2">
             {onboardingSteps.map((_, index) => (
               <div
                 key={index}
-                className={`w-3 h-3 rounded-full transition-colors ${
+                className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-colors ${
                   index <= currentStep ? 'bg-leaf' : 'bg-leaf/20'
                 }`}
               />
             ))}
           </div>
-          <p className="text-sm text-ink/60">
+          <p className="text-xs sm:text-sm text-ink/60">
             {currentStep + 1} / {onboardingSteps.length}
           </p>
         </div>
 
         {/* メインコンテンツ */}
-        <Card className="bg-white/80 backdrop-blur-sm border-leaf/10 shadow-lg rounded-3xl">
-          <CardContent className="p-8 md:p-12">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-ink mb-2">
+        <Card className="bg-white/80 backdrop-blur-sm border-leaf/10 shadow-lg rounded-2xl sm:rounded-3xl">
+          <CardContent className="p-4 sm:p-6 md:p-8 lg:p-12">
+            <div className="text-center mb-4 sm:mb-6 md:mb-8">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-ink mb-2">
                 {currentStepData.title}
               </h2>
-              <p className="text-lg text-ink/70">
+              <p className="text-sm sm:text-base md:text-lg text-ink/70">
                 {currentStepData.subtitle}
               </p>
             </div>
 
-            <div className="mb-8">
+            <div className="mb-4 sm:mb-6 md:mb-8">
               {currentStepData.content}
             </div>
 
             {/* ナビゲーションボタン */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0">
               <Button
                 variant="outline"
                 onClick={handlePrev}
                 disabled={currentStep === 0}
-                className="border-leaf/30 hover:bg-leaf/10 rounded-2xl"
+                className="border-leaf/30 hover:bg-leaf/10 rounded-xl sm:rounded-2xl text-sm sm:text-base order-2 sm:order-1"
+                size="sm"
               >
-                <ChevronLeft className="w-4 h-4 mr-2" />
+                <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 前へ
               </Button>
 
               {currentStep === onboardingSteps.length - 1 ? (
                 <Button
                   onClick={handleStart}
-                  className="bg-leaf hover:bg-leaf/90 text-white px-8 py-3 rounded-2xl shadow-sm"
+                  className="bg-leaf hover:bg-leaf/90 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl shadow-sm text-sm sm:text-base order-1 sm:order-2"
                   size="lg"
                 >
-                  <span className="mr-2">はじめる</span>
-                  <ArrowRight className="w-5 h-5" />
+                  <span className="mr-1 sm:mr-2">はじめる</span>
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
               ) : (
                 <Button
                   onClick={handleNext}
-                  className="bg-leaf hover:bg-leaf/90 text-white rounded-2xl"
+                  className="bg-leaf hover:bg-leaf/90 text-white rounded-xl sm:rounded-2xl text-sm sm:text-base order-1 sm:order-2"
+                  size="sm"
                 >
-                  <span className="mr-2">次へ</span>
-                  <ChevronRight className="w-4 h-4" />
+                  <span className="mr-1 sm:mr-2">次へ</span>
+                  <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>
               )}
             </div>
@@ -265,11 +267,12 @@ export default function Onboarding() {
         </Card>
 
         {/* スキップボタン */}
-        <div className="text-center mt-6">
+        <div className="text-center mt-4 sm:mt-6">
           <Button
             variant="ghost"
             onClick={handleStart}
-            className="text-ink/60 hover:text-ink hover:bg-leaf/10 rounded-2xl"
+            className="text-ink/60 hover:text-ink hover:bg-leaf/10 rounded-xl sm:rounded-2xl text-sm sm:text-base"
+            size="sm"
           >
             スキップして始める
           </Button>

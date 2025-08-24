@@ -341,42 +341,45 @@ export default function Home() {
     <div className="min-h-screen bg-sage">
       {/* ヘッダー */}
       <div className="border-b border-leaf/10 bg-white/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center">
-                <Sprout className="w-6 h-6 text-white" />
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center">
+                <Sprout className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
-              <h1 className="text-xl font-semibold text-ink">FailSeed</h1>
+              <h1 className="text-lg sm:text-xl font-semibold text-ink">FailSeed</h1>
             </div>
-            <nav className="flex items-center space-x-4">
+            <nav className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
               <Link href="/onboarding">
                 <Button 
                   variant="ghost" 
-                  className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-2xl text-sm"
+                  className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
                   size="sm"
                 >
-                  使い方
+                  <span className="hidden sm:inline">使い方</span>
+                  <span className="sm:hidden">?</span>
                 </Button>
               </Link>
               <Link href="/growth">
                 <Button 
                   variant="outline" 
-                  className="text-ink border-leaf/20 hover:bg-soil/20 rounded-2xl"
+                  className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
+                  size="sm"
                 >
-                  記録一覧
+                  <span className="hidden sm:inline">記録一覧</span>
+                  <span className="sm:hidden">記録</span>
                 </Button>
               </Link>
               {isAuthenticated && (
                 <Button 
                   variant="ghost" 
-                  className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-2xl text-sm"
+                  className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-1 sm:px-2"
                   size="sm"
                   onClick={() => logout()}
                   disabled={false}
                 >
-                  <LogOut className="w-4 h-4 mr-1" />
-                  ログアウト
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden md:inline ml-1">ログアウト</span>
                 </Button>
               )}
             </nav>
@@ -385,33 +388,33 @@ export default function Home() {
       </div>
 
       {/* メインコンテンツ */}
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8 max-w-4xl">
 
         {/* 名言セクション */}
-        <Card className="mb-8 bg-sage/20 border-leaf/10 rounded-3xl shadow-sm">
-          <CardContent className="p-6 text-center">
-            <blockquote className="text-lg font-medium text-ink mb-2">
+        <Card className="mb-4 sm:mb-6 md:mb-8 bg-sage/20 border-leaf/10 rounded-2xl sm:rounded-3xl shadow-sm">
+          <CardContent className="p-4 sm:p-5 md:p-6 text-center">
+            <blockquote className="text-sm sm:text-base md:text-lg font-medium text-ink mb-2">
               {todaysQuote.isJapanese ? (
                 todaysQuote.text
               ) : (
                 <>
                   <div className="italic mb-1">"{todaysQuote.text}"</div>
-                  <div className="text-sm text-ink/70">"{todaysQuote.translation}"</div>
+                  <div className="text-xs sm:text-sm text-ink/70">"{todaysQuote.translation}"</div>
                 </>
               )}
             </blockquote>
-            <cite className="text-sm text-ink/70">— {todaysQuote.author}</cite>
+            <cite className="text-xs sm:text-sm text-ink/70">— {todaysQuote.author}</cite>
           </CardContent>
         </Card>
 
         {/* 対話開始セクション */}
-        <Card className="bg-white border-leaf/5 shadow-sm rounded-3xl">
-          <CardContent className="p-8">
-            <div className="text-center mb-6">
-              <h3 className="text-2xl font-bold text-ink mb-2">
+        <Card className="bg-white border-leaf/5 shadow-sm rounded-2xl sm:rounded-3xl">
+          <CardContent className="p-4 sm:p-6 md:p-8">
+            <div className="text-center mb-4 sm:mb-6">
+              <h3 className="text-xl sm:text-2xl font-bold text-ink mb-2">
                 体験を聞かせてください
               </h3>
-              <p className="text-ink/70">
+              <p className="text-sm sm:text-base text-ink/70">
                 どんな小さなことでも大丈夫です。AIが温かく受け止めます。
               </p>
             </div>
@@ -421,14 +424,14 @@ export default function Home() {
                 placeholder="今日はどんなことがありましたか？"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                className="min-h-[120px] border-leaf/20 focus:border-leaf/40 focus:ring-leaf/30 rounded-2xl bg-sage/30"
+                className="min-h-[100px] sm:min-h-[120px] border-leaf/20 focus:border-leaf/40 focus:ring-leaf/30 rounded-2xl bg-sage/30 text-sm sm:text-base"
               />
 
               <div className="text-center">
                 <Button 
                   size="lg"
                   disabled={!text.trim() || isStarting}
-                  className="px-8 py-3 bg-leaf hover:bg-leaf/90 text-white font-medium rounded-2xl shadow-sm"
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-leaf hover:bg-leaf/90 text-white font-medium rounded-2xl shadow-sm text-sm sm:text-base"
                   onClick={() => {
                     if (text.trim() && !isStarting) {
                       setIsStarting(true);
@@ -437,9 +440,9 @@ export default function Home() {
                   }}
                 >
                   {isStarting ? (
-                    <div className="w-5 h-5 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-4 h-4 sm:w-5 sm:h-5 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
-                    <MessageCircle className="w-5 h-5 mr-2" />
+                    <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   )}
                   {isStarting ? '対話開始中...' : '対話する'}
                 </Button>

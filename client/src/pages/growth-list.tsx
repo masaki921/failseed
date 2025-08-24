@@ -323,31 +323,32 @@ export default function GrowthList() {
     <div className="min-h-screen bg-sage">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-leaf/10 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
           <Link href="/">
-            <div className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity">
-              <div className="w-10 h-10 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center">
-                <Sprout className="w-6 h-6 text-white" />
+            <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer hover:opacity-80 transition-opacity">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center">
+                <Sprout className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
-              <h1 className="text-xl font-semibold text-ink">FailSeed</h1>
+              <h1 className="text-lg sm:text-xl font-semibold text-ink">FailSeed</h1>
             </div>
           </Link>
           
-          <nav className="flex items-center space-x-4">
-            <Button className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl">
-              記録一覧
+          <nav className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
+            <Button className="bg-leaf text-white hover:bg-leaf/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3" size="sm">
+              <span className="hidden sm:inline">記録一覧</span>
+              <span className="sm:hidden">記録</span>
             </Button>
             {isAuthenticated && (
               <Button 
                 variant="ghost" 
-                className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-2xl text-sm"
+                className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-1 sm:px-2"
                 size="sm"
                 onClick={() => logout()}
                 disabled={false}
               >
-                <LogOut className="w-4 h-4 mr-1" />
-                ログアウト
+                <LogOut className="w-4 h-4" />
+                <span className="hidden md:inline ml-1">ログアウト</span>
               </Button>
             )}
           </nav>
@@ -356,35 +357,35 @@ export default function GrowthList() {
       </header>
 
       <main className="max-w-6xl mx-auto px-3 py-4 md:px-4 md:py-6">
-        <Card className="rounded-3xl shadow-sm border-leaf/5 mb-6">
-          <CardContent className="p-4 md:p-8">
-            <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0 mb-6">
+        <Card className="rounded-2xl sm:rounded-3xl shadow-sm border-leaf/5 mb-4 sm:mb-6">
+          <CardContent className="p-3 sm:p-4 md:p-6 lg:p-8">
+            <div className="flex flex-col space-y-3 sm:space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0 mb-4 sm:mb-6">
               <div className="min-w-0">
-                <h2 className="text-lg md:text-2xl font-semibold text-ink mb-1 md:mb-2 break-words">あなたの振り返り記録</h2>
-                <p className="text-sm md:text-base text-ink/70 break-words">あなたが育てた気づきと学びたちです</p>
+                <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-ink mb-1 md:mb-2 break-words">あなたの振り返り記録</h2>
+                <p className="text-xs sm:text-sm md:text-base text-ink/70 break-words">あなたが育てた気づきと学びたちです</p>
               </div>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 shrink-0">
-                <div className="bg-soil/30 px-3 py-2 rounded-xl text-center sm:text-left">
-                  <span className="text-ink font-medium">{entries.length}</span>
-                  <span className="text-ink/70 ml-1">個の成長</span>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 md:gap-4 shrink-0">
+                <div className="bg-soil/30 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-center sm:text-left">
+                  <span className="text-sm sm:text-base text-ink font-medium">{entries.length}</span>
+                  <span className="text-xs sm:text-sm text-ink/70 ml-1">個の成長</span>
                 </div>
-                <div className="flex items-center bg-white/50 rounded-xl p-1 border border-leaf/10">
+                <div className="flex items-center bg-white/50 rounded-lg sm:rounded-xl p-0.5 sm:p-1 border border-leaf/10">
                   <Button
                     variant={viewMode === 'list' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('list')}
-                    className={`rounded-lg px-2 sm:px-3 flex-1 ${viewMode === 'list' ? 'bg-leaf text-white hover:bg-leaf/90' : 'text-ink/70 hover:text-ink hover:bg-leaf/10'}`}
+                    className={`rounded-md sm:rounded-lg px-1.5 sm:px-2 md:px-3 flex-1 ${viewMode === 'list' ? 'bg-leaf text-white hover:bg-leaf/90' : 'text-ink/70 hover:text-ink hover:bg-leaf/10'}`}
                   >
-                    <List className="w-4 h-4 mr-1" />
+                    <List className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1" />
                     <span className="text-xs sm:text-sm">リスト</span>
                   </Button>
                   <Button
                     variant={viewMode === 'calendar' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('calendar')}
-                    className={`rounded-lg px-2 sm:px-3 flex-1 ${viewMode === 'calendar' ? 'bg-leaf text-white hover:bg-leaf/90' : 'text-ink/70 hover:text-ink hover:bg-leaf/10'}`}
+                    className={`rounded-md sm:rounded-lg px-1.5 sm:px-2 md:px-3 flex-1 ${viewMode === 'calendar' ? 'bg-leaf text-white hover:bg-leaf/90' : 'text-ink/70 hover:text-ink hover:bg-leaf/10'}`}
                   >
-                    <Calendar className="w-4 h-4 mr-1" />
+                    <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1" />
                     <span className="text-xs sm:text-sm">カレンダー</span>
                   </Button>
                 </div>
