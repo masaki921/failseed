@@ -6,6 +6,12 @@ import { storage } from "./storage";
 declare module 'express-session' {
   export interface SessionData {
     userId?: string;
+    guestConversations?: {
+      [entryId: string]: {
+        messages: ConversationMessage[];
+        turnCount: number;
+      };
+    };
   }
 }
 import { generateConversationResponse, generateFinalizationResponse, detectDangerousContent } from "./services/gemini";
@@ -191,6 +197,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Guest mode conversation start (temporary, not saved to database)
+  app.post("/api/guest/conversation/start", async (req, res) => {
+    try {
+      const { text } = startConversationSchema.parse(req.body);
+      
+      // 入力サイズ制限
+      if (text.length > 5000) {
+        return res.status(400).json({
+          error: "input_too_long",
+          message: "入力が長すぎます。5000文字以下で入力してください。"
+        });
+      }
+
+      // Check for dangerous content
+      if (detectDangerousContent(text)) {
+        return res.status(400).json({
+          error: "safety_concern",
+          message: "心配な内容が含まれています。専門の相談窓口にご相談ください。",
+          resources: [
+            "いのちの電話: 0570-783-556",
+            "こころの健康相談統一ダイヤル: 0570-064-556"
+          ]
+        });
+      }
+
+      // Generate AI response for guest mode (no database save)
+      const aiResponse = await generateConversationResponse("", text, 1);
+      
+      // Create temporary session-based conversation ID
+      const tempEntryId = `guest-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Store conversation in session for guest mode
+      if (!req.session.guestConversations) {
+        req.session.guestConversations = {};
+      }
+      
+      req.session.guestConversations[tempEntryId] = {
+        messages: [
+          {
+            role: 'user',
+            content: text,
+            timestamp: new Date().toISOString()
+          },
+          {
+            role: 'assistant',
+            content: aiResponse.message,
+            timestamp: new Date().toISOString()
+          }
+        ],
+        turnCount: 1
+      };
+
+      const response: AIConversationResponse = {
+        message: aiResponse.message,
+        shouldFinalize: aiResponse.shouldFinalize,
+        entryId: tempEntryId,
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error("Guest conversation start error:", error);
+      res.status(500).json({ 
+        error: "server_error",
+        message: "応答の生成に失敗しました。しばらく待ってからもう一度お試しください。"
+      });
+    }
+  });
+
   // Start new conversation
   app.post("/api/conversation/start", requireAuth, async (req, res) => {
     try {
@@ -256,6 +330,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(response);
     } catch (error) {
       console.error("Start conversation error:", error);
+      res.status(500).json({ 
+        error: "server_error",
+        message: "応答の生成に失敗しました。しばらく待ってからもう一度お試しください。"
+      });
+    }
+  });
+
+  // Guest mode conversation continue
+  app.post("/api/guest/conversation/continue", async (req, res) => {
+    try {
+      const { entryId, message } = continueConversationSchema.parse(req.body);
+      
+      // 入力サイズ制限
+      if (message.length > 5000) {
+        return res.status(400).json({
+          error: "input_too_long",
+          message: "入力が長すぎます。5000文字以下で入力してください。"
+        });
+      }
+
+      // Check for dangerous content
+      if (detectDangerousContent(message)) {
+        return res.status(400).json({
+          error: "safety_concern",
+          message: "心配な内容が含まれています。専門の相談窓口にご相談ください。",
+          resources: [
+            "いのちの電話: 0570-783-556",
+            "こころの健康相談統一ダイヤル: 0570-064-556"
+          ]
+        });
+      }
+
+      // Get guest conversation from session
+      if (!req.session.guestConversations || !req.session.guestConversations[entryId]) {
+        return res.status(404).json({ 
+          error: "not_found",
+          message: "会話が見つかりません。"
+        });
+      }
+
+      const conversation = req.session.guestConversations[entryId];
+      const turnCount = conversation.turnCount + 1;
+
+      // Build conversation history for AI context
+      const conversationHistory = conversation.messages.map((msg: any) => 
+        `${msg.role === 'user' ? 'ユーザー' : 'FailSeed君'}: ${msg.content}`
+      ).join('\n\n');
+
+      // Generate AI response
+      const aiResponse = await generateConversationResponse(conversationHistory, message, turnCount);
+
+      // Add new messages to conversation
+      conversation.messages.push(
+        {
+          role: 'user',
+          content: message,
+          timestamp: new Date().toISOString()
+        },
+        {
+          role: 'assistant',
+          content: aiResponse.message,
+          timestamp: new Date().toISOString()
+        }
+      );
+      conversation.turnCount = turnCount;
+
+      const response: AIConversationResponse = {
+        message: aiResponse.message,
+        shouldFinalize: aiResponse.shouldFinalize,
+        entryId,
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error("Guest conversation continue error:", error);
       res.status(500).json({ 
         error: "server_error",
         message: "応答の生成に失敗しました。しばらく待ってからもう一度お試しください。"

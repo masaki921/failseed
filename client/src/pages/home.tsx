@@ -163,7 +163,8 @@ export default function Home() {
 
   const startConversationMutation = useMutation({
     mutationFn: async (message: string) => {
-      const response = await fetch('/api/conversation/start', {
+      const endpoint = isGuestMode ? '/api/guest/conversation/start' : '/api/conversation/start';
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: message })
@@ -192,7 +193,8 @@ export default function Home() {
 
   const continueConversationMutation = useMutation({
     mutationFn: async (message: string) => {
-      const response = await fetch('/api/conversation/continue', {
+      const endpoint = isGuestMode ? '/api/guest/conversation/continue' : '/api/conversation/continue';
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ entryId: currentEntryId, message: message })
@@ -313,13 +315,28 @@ export default function Home() {
                 </div>
               </div>
               <div className="text-center">
-                <Button 
-                  onClick={() => finalizeConversationMutation.mutate()}
-                  disabled={finalizeConversationMutation.isPending}
-                  className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl px-8"
-                >
-                  学びに変換する
-                </Button>
+                {isGuestMode ? (
+                  <div className="space-y-3">
+                    <p className="text-sm text-ink/70 mb-2">
+                      学びとして保存するには、アカウント作成が必要です
+                    </p>
+                    <Link href="/register">
+                      <Button 
+                        className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl px-8"
+                      >
+                        アカウント作成して保存
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <Button 
+                    onClick={() => finalizeConversationMutation.mutate()}
+                    disabled={finalizeConversationMutation.isPending}
+                    className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl px-8"
+                  >
+                    学びに変換する
+                  </Button>
+                )}
               </div>
             </div>
           )}
@@ -355,26 +372,30 @@ export default function Home() {
               <h1 className="text-lg sm:text-xl font-semibold text-ink">FailSeed</h1>
             </div>
             <nav className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
-              <Link href="/onboarding">
-                <Button 
-                  variant="ghost" 
-                  className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
-                  size="sm"
-                >
-                  <span className="hidden sm:inline">使い方</span>
-                  <span className="sm:hidden">?</span>
-                </Button>
-              </Link>
-              <Link href="/growth">
-                <Button 
-                  variant="outline" 
-                  className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
-                  size="sm"
-                >
-                  <span className="hidden sm:inline">記録一覧</span>
-                  <span className="sm:hidden">記録</span>
-                </Button>
-              </Link>
+              {!isGuestMode && (
+                <>
+                  <Link href="/onboarding">
+                    <Button 
+                      variant="ghost" 
+                      className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
+                      size="sm"
+                    >
+                      <span className="hidden sm:inline">使い方</span>
+                      <span className="sm:hidden">?</span>
+                    </Button>
+                  </Link>
+                  <Link href="/growth">
+                    <Button 
+                      variant="outline" 
+                      className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
+                      size="sm"
+                    >
+                      <span className="hidden sm:inline">記録一覧</span>
+                      <span className="sm:hidden">記録</span>
+                    </Button>
+                  </Link>
+                </>
+              )}
               {isAuthenticated ? (
                 <Button 
                   variant="ghost" 
