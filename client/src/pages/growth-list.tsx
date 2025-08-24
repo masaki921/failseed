@@ -78,8 +78,27 @@ export default function GrowthList() {
     if (isGuestMode) {
       fetch('/api/guest/entries')
         .then(res => res.json())
-        .then(data => setGuestEntries(data))
+        .then(data => {
+          console.log('Fetched guest entries:', data);
+          setGuestEntries(data);
+        })
         .catch(err => console.error('Failed to fetch guest entries:', err));
+    }
+  }, [isGuestMode]);
+
+  // URLハッシュで記録IDが指定されている場合は再取得（学び生成後のリダイレクト用）
+  useEffect(() => {
+    if (isGuestMode && window.location.hash) {
+      // ハッシュがある場合は学び生成後の可能性があるので再取得
+      setTimeout(() => {
+        fetch('/api/guest/entries')
+          .then(res => res.json())
+          .then(data => {
+            console.log('Refreshed guest entries:', data);
+            setGuestEntries(data);
+          })
+          .catch(err => console.error('Failed to refresh guest entries:', err));
+      }, 500); // 少し遅延させてセッション保存を待つ
     }
   }, [isGuestMode]);
 

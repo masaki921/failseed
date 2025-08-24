@@ -450,14 +450,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const originalText = conversation.messages.find((msg: any) => msg.role === 'user')?.content || '';
       
-      req.session.guestEntries.push({
+      const guestEntry = {
         id: entryId,
         text: originalText,
         aiGrowth: aiResponse.growth,
         aiHint: aiResponse.hint,
         createdAt: new Date().toISOString(),
         isCompleted: 1
-      });
+      };
+      
+      req.session.guestEntries.push(guestEntry);
+      
+      console.log('Saved guest entry:', guestEntry);
+      console.log('Total guest entries in session:', req.session.guestEntries.length);
 
       // Clear the conversation from session (optional, for cleanup)
       delete req.session.guestConversations[entryId];
@@ -482,6 +487,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/guest/entries", async (req, res) => {
     try {
       const guestEntries = req.session.guestEntries || [];
+      console.log('Fetching guest entries from session:', guestEntries.length, 'entries');
       res.json(guestEntries);
     } catch (error) {
       console.error("Get guest entries error:", error);
