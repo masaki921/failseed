@@ -430,6 +430,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete entry
+  app.delete("/api/entry/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      if (!id) {
+        return res.status(400).json({
+          error: "invalid_request",
+          message: "記録IDが必要です。"
+        });
+      }
+
+      // Get authenticated user ID
+      const userId = req.session.userId!;
+      
+      // Delete the entry
+      const success = await storage.deleteEntry(id, userId);
+      
+      if (!success) {
+        return res.status(404).json({
+          error: "not_found",
+          message: "記録が見つからないか、削除権限がありません。"
+        });
+      }
+
+      // Log for development
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[DEBUG] User: ${userId.substring(0, 8)}..., deleted entry: ${id}`);
+      }
+
+      res.json({ success: true, message: "記録を削除しました。" });
+    } catch (error) {
+      console.error("Delete entry error:", error);
+      res.status(500).json({
+        error: "server_error",
+        message: "記録の削除に失敗しました。"
+      });
+    }
+  });
+
   // Get all completed entries
   app.get("/api/grows", requireAuth, async (req, res) => {
     try {

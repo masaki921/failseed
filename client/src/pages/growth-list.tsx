@@ -83,8 +83,22 @@ export default function GrowthList() {
     }
   });
 
+  const deleteEntryMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiRequest("DELETE", `/api/entry/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/grows'] });
+    }
+  });
+
   const handleHintAction = (entryId: string, action: 'tried' | 'skipped') => {
     updateHintMutation.mutate({ id: entryId, hintStatus: action });
+  };
+
+  const handleDeleteEntry = (entryId: string) => {
+    deleteEntryMutation.mutate(entryId);
   };
 
   // URLハッシュで特定の記録にスクロール
@@ -160,7 +174,9 @@ export default function GrowthList() {
               <GrowthEntry 
                 entry={entry} 
                 onHintAction={handleHintAction}
+                onDelete={handleDeleteEntry}
                 isUpdating={updateHintMutation.isPending}
+                isDeleting={deleteEntryMutation.isPending}
               />
             </div>
           ))}
@@ -327,8 +343,8 @@ export default function GrowthList() {
                 variant="ghost" 
                 className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-2xl text-sm"
                 size="sm"
-                onClick={() => logout.mutate()}
-                disabled={logout.isPending}
+                onClick={() => logout()}
+                disabled={false}
               >
                 <LogOut className="w-4 h-4 mr-1" />
                 ログアウト

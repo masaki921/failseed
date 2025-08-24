@@ -372,8 +372,8 @@ export default function Home() {
                   variant="ghost" 
                   className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-2xl text-sm"
                   size="sm"
-                  onClick={() => logout.mutate()}
-                  disabled={logout.isPending}
+                  onClick={() => logout()}
+                  disabled={false}
                 >
                   <LogOut className="w-4 h-4 mr-1" />
                   ログアウト

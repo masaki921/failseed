@@ -1,16 +1,29 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { type Entry } from "@shared/schema";
-import { Lightbulb } from "lucide-react";
+import { Lightbulb, Trash2 } from "lucide-react";
 
 interface GrowthEntryProps {
   entry: Entry;
   onHintAction: (entryId: string, action: 'tried' | 'skipped') => void;
+  onDelete: (entryId: string) => void;
   isUpdating: boolean;
+  isDeleting?: boolean;
 }
 
-export default function GrowthEntry({ entry, onHintAction, isUpdating }: GrowthEntryProps) {
+export default function GrowthEntry({ entry, onHintAction, onDelete, isUpdating, isDeleting = false }: GrowthEntryProps) {
   const formatDate = (date: Date | string) => {
     const d = new Date(date);
     return d.toLocaleDateString('ja-JP', {
@@ -41,8 +54,41 @@ export default function GrowthEntry({ entry, onHintAction, isUpdating }: GrowthE
             <div className="w-3 h-3 bg-leaf rounded-full"></div>
             <span className="text-ink/60 text-sm">{formatDate(entry.createdAt)}</span>
           </div>
-          <div className="hint-status">
-            {getHintStatusBadge(entry.hintStatus)}
+          <div className="flex items-center space-x-2">
+            <div className="hint-status">
+              {getHintStatusBadge(entry.hintStatus)}
+            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-600/70 hover:text-red-600 hover:bg-red-50 rounded-lg px-2"
+                  disabled={isDeleting}
+                  data-testid={`button-delete-${entry.id}`}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="rounded-3xl">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>記録を削除しますか？</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    この記録を削除すると、復元することはできません。本当に削除してもよろしいですか？
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="rounded-2xl">キャンセル</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => onDelete(entry.id)}
+                    className="bg-red-600 hover:bg-red-700 rounded-2xl"
+                    data-testid={`button-confirm-delete-${entry.id}`}
+                  >
+                    削除する
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
         

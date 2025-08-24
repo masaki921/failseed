@@ -10,6 +10,7 @@ export interface IStorage {
   updateConversationHistory(id: string, messages: ConversationMessage[], conversationTurn?: number): Promise<Entry>;
   finalizeConversation(id: string, growth: string, hint?: string): Promise<Entry>;
   updateHintStatus(id: string, hintStatus: UpdateHint["hintStatus"]): Promise<Entry | undefined>;
+  deleteEntry(id: string, userId: string): Promise<boolean>;
   getAllCompletedEntries(userId: string): Promise<Entry[]>;
   
   // User operations
@@ -87,6 +88,15 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return entry || undefined;
+  }
+
+  async deleteEntry(id: string, userId: string): Promise<boolean> {
+    const result = await db
+      .delete(entries)
+      .where(and(eq(entries.id, id), eq(entries.userId, userId)))
+      .returning({ id: entries.id });
+    
+    return result.length > 0;
   }
 
   async getAllCompletedEntries(userId: string): Promise<Entry[]> {
