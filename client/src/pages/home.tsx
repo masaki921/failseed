@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "wouter";
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -136,7 +136,16 @@ export default function Home() {
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
   const [conversationState, setConversationState] = useState<'initial' | 'ongoing' | 'complete'>('initial');
+  const [, setLocation] = useLocation();
   const todaysQuote = getTodaysQuote();
+
+  // 初回訪問チェックとオンボーディングリダイレクト
+  useEffect(() => {
+    const hasCompletedOnboarding = localStorage.getItem('failseed_onboarding_completed');
+    if (!hasCompletedOnboarding) {
+      setLocation('/onboarding');
+    }
+  }, [setLocation]);
 
   const startConversationMutation = useMutation({
     mutationFn: async (message: string) => {
@@ -308,6 +317,15 @@ export default function Home() {
               <h1 className="text-xl font-semibold text-ink">FailSeed</h1>
             </div>
             <nav className="flex items-center space-x-4">
+              <Link href="/onboarding">
+                <Button 
+                  variant="ghost" 
+                  className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-2xl text-sm"
+                  size="sm"
+                >
+                  使い方
+                </Button>
+              </Link>
               <Link href="/growth">
                 <Button 
                   variant="outline" 
