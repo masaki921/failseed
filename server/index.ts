@@ -6,14 +6,43 @@ import helmet from "helmet";
 import path from "path";
 import fs from "fs";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
 // プロキシ信頼設定（Replit環境対応）
-const isProduction = process.env.REPLIT_DEPLOYMENT === '1';
+const isProduction = process.env.NODE_ENV === 'production' || process.env.REPLIT_DEPLOYMENT === '1';
 if (isProduction) {
   app.set('trust proxy', 1);
+}
+
+// Logging function
+function log(message: string, source = "express") {
+  const formattedTime = new Date().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+
+  console.log(`${formattedTime} [${source}] ${message}`);
+}
+
+// Production static file serving
+function serveStatic(app: express.Express) {
+  const distPath = path.resolve(import.meta.dirname, "public");
+
+  if (!fs.existsSync(distPath)) {
+    throw new Error(
+      `Could not find the build directory: ${distPath}, make sure to build the client first`,
+    );
+  }
+
+  app.use(express.static(distPath));
+
+  // fall through to index.html if the file doesn't exist
+  app.use("*", (_req, res) => {
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
 }
 
 // セキュリティミドルウェア
@@ -40,6 +69,8 @@ const limiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  // Skip validation for X-Forwarded-For header since we handle trust proxy at Express level
+  validate: false,
 });
 app.use(limiter);
 
@@ -116,21 +147,23 @@ app.use((req, res, next) => {
   
   if (isProduction) {
     console.log("Setting up static file serving for production...");
-    // Custom static file serving for production
-    const distPath = path.resolve(import.meta.dirname, "../dist/public");
-    
-    if (fs.existsSync(distPath)) {
-      app.use(express.static(distPath));
-      app.use("*", (_req, res) => {
-        res.sendFile(path.resolve(distPath, "index.html"));
-      });
-    } else {
-      console.error(`Build directory not found: ${distPath}. Please run 'npm run build' first.`);
+    try {
+      serveStatic(app);
+    } catch (error) {
+      console.error("Failed to setup static file serving:", error);
       process.exit(1);
     }
   } else {
     console.log("Setting up Vite for development...");
-    await setupVite(app, server);
+    // Dynamically import vite only in development - check if file exists first
+    try {
+      const viteModule = await import("./vite.js");
+      await viteModule.setupVite(app, server);
+    } catch (error) {
+      console.error("Failed to load Vite development server:", error);
+      console.log("Falling back to static file serving...");
+      serveStatic(app);
+    }
   }
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
