@@ -135,18 +135,21 @@ export default function Home() {
   const [isStarting, setIsStarting] = useState(false);
   const [isChatting, setIsChatting] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  
+  // URLパラメータからゲストモードを判定
+  const isGuestMode = new URLSearchParams(window.location.search).get('guest') === 'true';
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
   const [conversationState, setConversationState] = useState<'initial' | 'ongoing' | 'complete'>('initial');
   const [, setLocation] = useLocation();
   const todaysQuote = getTodaysQuote();
 
-  // 認証されていない場合はログインページにリダイレクト
+  // 認証されていない場合はログインページにリダイレクト（ゲストモード以外）
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated && !isGuestMode) {
       setLocation('/login');
     }
-  }, [isLoading, isAuthenticated, setLocation]);
+  }, [isLoading, isAuthenticated, isGuestMode, setLocation]);
 
   // 初回訪問チェックとオンボーディングリダイレクト
   useEffect(() => {
@@ -370,7 +373,7 @@ export default function Home() {
                   <span className="sm:hidden">記録</span>
                 </Button>
               </Link>
-              {isAuthenticated && (
+              {isAuthenticated ? (
                 <Button 
                   variant="ghost" 
                   className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-1 sm:px-2"
@@ -381,7 +384,27 @@ export default function Home() {
                   <LogOut className="w-4 h-4" />
                   <span className="hidden md:inline ml-1">ログアウト</span>
                 </Button>
-              )}
+              ) : isGuestMode ? (
+                <div className="flex items-center space-x-1 sm:space-x-2">
+                  <Link href="/login">
+                    <Button 
+                      variant="outline" 
+                      className="text-leaf border-leaf/30 hover:bg-leaf/10 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
+                      size="sm"
+                    >
+                      ログイン
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button 
+                      className="bg-leaf text-white hover:bg-leaf/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
+                      size="sm"
+                    >
+                      新規登録
+                    </Button>
+                  </Link>
+                </div>
+              ) : null}
             </nav>
           </div>
         </div>
@@ -428,24 +451,56 @@ export default function Home() {
               />
 
               <div className="text-center">
-                <Button 
-                  size="lg"
-                  disabled={!text.trim() || isStarting}
-                  className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-leaf hover:bg-leaf/90 text-white font-medium rounded-2xl shadow-sm text-sm sm:text-base"
-                  onClick={() => {
-                    if (text.trim() && !isStarting) {
-                      setIsStarting(true);
-                      startConversationMutation.mutate(text.trim());
-                    }
-                  }}
-                >
-                  {isStarting ? (
-                    <div className="w-4 h-4 sm:w-5 sm:h-5 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  )}
-                  {isStarting ? '対話開始中...' : '対話する'}
-                </Button>
+                {isAuthenticated ? (
+                  <Button 
+                    size="lg"
+                    disabled={!text.trim() || isStarting}
+                    className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-leaf hover:bg-leaf/90 text-white font-medium rounded-2xl shadow-sm text-sm sm:text-base"
+                    onClick={() => {
+                      if (text.trim() && !isStarting) {
+                        setIsStarting(true);
+                        startConversationMutation.mutate(text.trim());
+                      }
+                    }}
+                  >
+                    {isStarting ? (
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    )}
+                    {isStarting ? '対話開始中...' : '対話する'}
+                  </Button>
+                ) : isGuestMode ? (
+                  <div className="space-y-3">
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 text-center">
+                      <p className="text-yellow-800 text-sm sm:text-base mb-2">
+                        💫 体験を記録として保存するには、アカウント登録が必要です
+                      </p>
+                      <p className="text-yellow-700 text-xs sm:text-sm">
+                        無料でアカウントを作成して、AIとの対話と成長記録を始めましょう
+                      </p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center">
+                      <Link href="/register" className="flex-1 sm:flex-none">
+                        <Button 
+                          className="w-full sm:w-auto bg-leaf hover:bg-leaf/90 text-white px-6 py-3 rounded-2xl shadow-sm text-sm sm:text-base"
+                          size="lg"
+                        >
+                          <span className="mr-2">新規登録して始める</span>
+                        </Button>
+                      </Link>
+                      <Link href="/login" className="flex-1 sm:flex-none">
+                        <Button 
+                          variant="outline"
+                          className="w-full sm:w-auto border-leaf/30 text-leaf hover:bg-leaf/10 px-6 py-3 rounded-2xl text-sm sm:text-base"
+                          size="lg"
+                        >
+                          ログイン
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
           </CardContent>

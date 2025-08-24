@@ -143,10 +143,16 @@ export default function Login() {
             </p>
           </div>
 
-          <div className="mt-4 text-center">
+          <div className="mt-4 text-center space-y-2">
             <Link href="/">
               <Button variant="ghost" className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-2xl" data-testid="button-home">
                 ホームに戻る
+              </Button>
+            </Link>
+            <div className="text-ink/40 text-xs">または</div>
+            <Link href="/?guest=true">
+              <Button variant="outline" className="text-leaf border-leaf/30 hover:bg-leaf/10 rounded-2xl w-full" data-testid="button-guest">
+                ログインせずに利用する
               </Button>
             </Link>
           </div>
