@@ -221,12 +221,22 @@ export default function Home() {
         <div className="border-b border-leaf/10 bg-white/80 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setIsChatting(false);
+                  setMessages([]);
+                  setCurrentEntryId(null);
+                  setConversationState('initial');
+                  setInputText('');
+                }}
+                className="flex items-center space-x-3 hover:bg-soil/20 rounded-2xl p-3"
+              >
                 <div className="w-10 h-10 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center">
                   <Sprout className="w-6 h-6 text-white" />
                 </div>
-                <h1 className="text-xl font-semibold text-ink">FailSeed君との対話</h1>
-              </div>
+                <h1 className="text-xl font-semibold text-ink">FailSeed</h1>
+              </Button>
             </div>
           </div>
         </div>
