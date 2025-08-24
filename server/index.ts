@@ -3,6 +3,8 @@ import session from "express-session";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
 import helmet from "helmet";
+import path from "path";
+import fs from "fs";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -108,12 +110,28 @@ app.use((req, res, next) => {
     }
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
+  // Setup serving based on environment
   console.log("NODE_ENV:", process.env.NODE_ENV);
-  console.log("Setting up Vite for development...");
-  await setupVite(app, server);
+  console.log("REPLIT_DEPLOYMENT:", process.env.REPLIT_DEPLOYMENT);
+  
+  if (isProduction) {
+    console.log("Setting up static file serving for production...");
+    // Custom static file serving for production
+    const distPath = path.resolve(import.meta.dirname, "../dist/public");
+    
+    if (fs.existsSync(distPath)) {
+      app.use(express.static(distPath));
+      app.use("*", (_req, res) => {
+        res.sendFile(path.resolve(distPath, "index.html"));
+      });
+    } else {
+      console.error(`Build directory not found: ${distPath}. Please run 'npm run build' first.`);
+      process.exit(1);
+    }
+  } else {
+    console.log("Setting up Vite for development...");
+    await setupVite(app, server);
+  }
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 5000 if not specified.
