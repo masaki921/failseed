@@ -7,6 +7,23 @@ export function useAuth() {
 
   const { data: user, isLoading, error } = useQuery({
     queryKey: ["/api/auth/current-user"],
+    queryFn: async () => {
+      try {
+        const response = await fetch("/api/auth/current-user", {
+          credentials: "include"
+        });
+        if (response.status === 401) {
+          return null; // 認証されていない場合はnullを返す
+        }
+        if (!response.ok) {
+          throw new Error(`${response.status}: ${response.statusText}`);
+        }
+        return await response.json();
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        return null;
+      }
+    },
     retry: false,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
