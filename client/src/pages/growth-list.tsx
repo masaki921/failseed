@@ -363,7 +363,7 @@ export default function GrowthList() {
       <header className="bg-white/80 backdrop-blur-sm border-b border-leaf/10 sticky top-0 z-50">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-          <Link href="/">
+          <Link href={isGuestMode ? "/?guest=true" : "/"}>
             <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer hover:opacity-80 transition-opacity">
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center">
                 <Sprout className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
@@ -377,7 +377,7 @@ export default function GrowthList() {
               <span className="hidden sm:inline">記録一覧</span>
               <span className="sm:hidden">記録</span>
             </Button>
-            {isAuthenticated ? (
+            {isAuthenticated && (
               <Button 
                 variant="ghost" 
                 className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-1 sm:px-2"
@@ -388,29 +388,7 @@ export default function GrowthList() {
                 <LogOut className="w-4 h-4" />
                 <span className="hidden md:inline ml-1">ログアウト</span>
               </Button>
-            ) : isGuestMode ? (
-              <div className="flex items-center space-x-2">
-                <Link href="/register">
-                  <Button 
-                    size="sm"
-                    className="bg-leaf text-white hover:bg-leaf/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
-                  >
-                    <span className="hidden sm:inline">アカウント作成</span>
-                    <span className="sm:hidden">登録</span>
-                  </Button>
-                </Link>
-                <Link href="/login">
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    className="border-leaf/20 hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
-                  >
-                    <span className="hidden sm:inline">ログイン</span>
-                    <span className="sm:hidden">Login</span>
-                  </Button>
-                </Link>
-              </div>
-            ) : null}
+            )}
           </nav>
           </div>
         </div>
