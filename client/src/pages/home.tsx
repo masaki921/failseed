@@ -246,22 +246,37 @@ export default function Home() {
           <div className="space-y-4 mb-6">
             {messages.map((message, index) => (
               <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                {message.type === 'ai' && (
+                  <div className="w-8 h-8 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center mr-3 mt-1 flex-shrink-0">
+                    <Sprout className="w-4 h-4 text-white" />
+                  </div>
+                )}
+                <div className={`max-w-xs lg:max-w-md ${
                   message.type === 'user' 
-                    ? 'bg-leaf text-white' 
-                    : 'bg-white text-ink border border-leaf/20'
+                    ? 'bg-leaf text-white px-4 py-3 rounded-2xl' 
+                    : 'bg-white text-ink border border-leaf/20 rounded-2xl'
                 }`}>
-                  {message.content}
+                  {message.type === 'ai' && (
+                    <div className="px-4 pt-3 pb-1">
+                      <span className="text-xs text-leaf font-medium">みど 🌱</span>
+                    </div>
+                  )}
+                  <div className={`${message.type === 'ai' ? 'px-4 pb-3' : 'px-4 py-3'}`}>
+                    {message.content}
+                  </div>
                 </div>
               </div>
             ))}
             
             {continueConversationMutation.isPending && (
               <div className="flex justify-start">
-                <div className="bg-white text-ink border border-leaf/20 px-4 py-2 rounded-2xl">
+                <div className="w-8 h-8 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center mr-3 mt-1 flex-shrink-0">
+                  <Sprout className="w-4 h-4 text-white" />
+                </div>
+                <div className="bg-white text-ink border border-leaf/20 px-4 py-3 rounded-2xl">
                   <div className="flex items-center space-x-2">
                     <div className="w-4 h-4 border-2 border-leaf/30 border-t-leaf rounded-full animate-spin"></div>
-                    <span>FailSeed君が考えています...</span>
+                    <span>みどが考えています...</span>
                   </div>
                 </div>
               </div>
@@ -285,7 +300,7 @@ export default function Home() {
                   <Textarea
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
-                    placeholder="FailSeed君と続きを話してください..."
+                    placeholder="みどと続きを話してください..."
                     className="flex-1 border-leaf/20 rounded-xl"
                     rows={3}
                   />
@@ -377,7 +392,7 @@ export default function Home() {
                 体験を聞かせてください
               </h3>
               <p className="text-ink/70">
-                どんな小さなことでも大丈夫です。FailSeed君が温かく受け止めます。
+                どんな小さなことでも大丈夫です。みどが温かく受け止めます 🌱
               </p>
             </div>
 
@@ -406,7 +421,7 @@ export default function Home() {
                   ) : (
                     <MessageCircle className="w-5 h-5 mr-2" />
                   )}
-                  {isStarting ? '対話開始中...' : '対話する'}
+                  {isStarting ? 'みどに話しています...' : 'みどに話してみる 🌱'}
                 </Button>
               </div>
             </div>

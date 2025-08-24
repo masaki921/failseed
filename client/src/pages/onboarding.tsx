@@ -23,7 +23,7 @@ const onboardingSteps = [
           <Sprout className="w-12 h-12 text-white" />
         </div>
         <p className="text-lg text-ink/80 mb-6 leading-relaxed">
-          温かいAIパートナー「FailSeed君」との対話を通じて、
+          温かいAIパートナー「みど」との対話を通じて、
           <br className="hidden sm:block" />
           うまくいかなかった体験を学びに変換します。
         </p>
@@ -44,7 +44,7 @@ const onboardingSteps = [
   },
   {
     id: 2,
-    title: "FailSeed君との対話",
+    title: "みどとの対話",
     subtitle: "温かいAIパートナーがあなたの体験を聞きます",
     content: (
       <div className="text-center">
@@ -52,13 +52,13 @@ const onboardingSteps = [
           <MessageCircle className="w-10 h-10 text-leaf" />
         </div>
         <p className="text-lg text-ink/80 mb-6 leading-relaxed">
-          FailSeed君は、あなたの体験を批判することなく、
+          みどは、あなたの体験を批判することなく、
           <br className="hidden sm:block" />
           温かく受け止めながら自然な対話を行います。
         </p>
         <div className="space-y-4">
           <div className="bg-white p-4 rounded-2xl border border-leaf/10 text-left">
-            <p className="text-sm text-ink/70 mb-2">FailSeed君:</p>
+            <p className="text-sm text-ink/70 mb-2">みど 🌱:</p>
             <p className="text-ink">「お疲れさまでした。どんな体験でしたか？」</p>
           </div>
           <div className="bg-leaf/10 p-4 rounded-2xl text-right">
@@ -81,7 +81,7 @@ const onboardingSteps = [
         <p className="text-lg text-ink/80 mb-6 leading-relaxed">
           対話を通じて体験の背景や原因が見えてきたら、
           <br className="hidden sm:block" />
-          FailSeed君が学びを抽出してくれます。
+          みどが学びを抽出してくれます。
         </p>
         <div className="bg-leaf/10 p-6 rounded-2xl">
           <div className="text-left space-y-3">
