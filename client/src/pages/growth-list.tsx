@@ -61,17 +61,35 @@ export default function GrowthList() {
   const queryClient = useQueryClient();
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [currentDate, setCurrentDate] = useState(new Date());
+  
+  // URLパラメータからゲストモードを判定
+  const isGuestMode = new URLSearchParams(window.location.search).get('guest') === 'true';
+  const [guestEntries, setGuestEntries] = useState<Entry[]>([]);
 
-  // 認証されていない場合はログインページにリダイレクト
+  // 認証されていない場合はログインページにリダイレクト（ゲストモード以外）
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated && !isGuestMode) {
       setLocation('/login');
     }
-  }, [isLoading, isAuthenticated, setLocation]);
+  }, [isLoading, isAuthenticated, isGuestMode, setLocation]);
+
+  // ゲストモードでセッションから記録を取得
+  useEffect(() => {
+    if (isGuestMode) {
+      fetch('/api/guest/entries')
+        .then(res => res.json())
+        .then(data => setGuestEntries(data))
+        .catch(err => console.error('Failed to fetch guest entries:', err));
+    }
+  }, [isGuestMode]);
 
   const { data: entries = [], isLoading: isEntriesLoading } = useQuery<Entry[]>({
     queryKey: ['/api/grows'],
+    enabled: !isGuestMode, // ゲストモードではAPIクエリを無効化
   });
+
+  // 表示用のエントリーリスト（ゲストモードかどうかで切り替え）
+  const displayEntries = isGuestMode ? guestEntries : entries;
 
   const updateHintMutation = useMutation({
     mutationFn: async ({ id, hintStatus }: { id: string; hintStatus: UpdateHint["hintStatus"] }) => {
@@ -103,7 +121,7 @@ export default function GrowthList() {
 
   // URLハッシュで特定の記録にスクロール
   useEffect(() => {
-    if (entries.length > 0) {
+    if (displayEntries.length > 0) {
       const hash = window.location.hash.slice(1);
       if (hash) {
         const element = document.getElementById(hash);
@@ -117,7 +135,7 @@ export default function GrowthList() {
         }
       }
     }
-  }, [entries]);
+  }, [displayEntries]);
 
   // カレンダー用のナビゲーション関数
   const navigateMonth = (direction: 'prev' | 'next') => {
@@ -134,7 +152,7 @@ export default function GrowthList() {
 
   // カレンダー用のデータ処理
   const days = getCalendarDays(currentDate);
-  const entriesByDate = entries.reduce((acc, entry) => {
+  const entriesByDate = displayEntries.reduce((acc, entry) => {
     const entryDate = new Date(entry.createdAt);
     const dateKey = formatDate(entryDate, 'yyyy-MM-dd');
     if (!acc[dateKey]) {
@@ -146,7 +164,7 @@ export default function GrowthList() {
 
   // コンテンツのレンダリング関数
   const renderContent = () => {
-    if (entries.length === 0) {
+    if (displayEntries.length === 0) {
       return (
         <div className="text-center py-12">
           <div className="w-20 h-20 bg-soil/30 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -154,7 +172,7 @@ export default function GrowthList() {
           </div>
           <h3 className="text-xl font-medium text-ink mb-2">まだ成長の記録がありません</h3>
           <p className="text-ink/60 mb-6">対話を通じて、最初の成長を記録してみませんか？</p>
-          <Link href="/">
+          <Link href={isGuestMode ? "/?guest=true" : "/"}>
             <Button 
               className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl"
             >
@@ -169,14 +187,15 @@ export default function GrowthList() {
     if (viewMode === 'list') {
       return (
         <div className="space-y-4">
-          {(entries as Entry[]).map((entry) => (
+          {(displayEntries as Entry[]).map((entry) => (
             <div key={entry.id} id={entry.id}>
               <GrowthEntry 
                 entry={entry} 
-                onHintAction={handleHintAction}
-                onDelete={handleDeleteEntry}
+                onHintAction={isGuestMode ? () => {} : handleHintAction}
+                onDelete={isGuestMode ? undefined : handleDeleteEntry}
                 isUpdating={updateHintMutation.isPending}
                 isDeleting={deleteEntryMutation.isPending}
+                isGuest={isGuestMode}
               />
             </div>
           ))}
@@ -366,7 +385,7 @@ export default function GrowthList() {
               </div>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 md:gap-4 shrink-0">
                 <div className="bg-soil/30 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-center sm:text-left">
-                  <span className="text-sm sm:text-base text-ink font-medium">{entries.length}</span>
+                  <span className="text-sm sm:text-base text-ink font-medium">{displayEntries.length}</span>
                   <span className="text-xs sm:text-sm text-ink/70 ml-1">個の成長</span>
                 </div>
                 <div className="flex items-center bg-white/50 rounded-lg sm:rounded-xl p-0.5 sm:p-1 border border-leaf/10">

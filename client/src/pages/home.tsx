@@ -379,29 +379,16 @@ export default function Home() {
                   <span className="sm:hidden">?</span>
                 </Button>
               </Link>
-              {isGuestMode ? (
+              <Link href={isGuestMode ? "/growth?guest=true" : "/growth"}>
                 <Button 
                   variant="outline" 
-                  className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3 opacity-50 cursor-not-allowed"
+                  className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
                   size="sm"
-                  disabled
-                  title="記録機能を使うにはアカウント作成が必要です"
                 >
                   <span className="hidden sm:inline">記録一覧</span>
                   <span className="sm:hidden">記録</span>
                 </Button>
-              ) : (
-                <Link href="/growth">
-                  <Button 
-                    variant="outline" 
-                    className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
-                    size="sm"
-                  >
-                    <span className="hidden sm:inline">記録一覧</span>
-                    <span className="sm:hidden">記録</span>
-                  </Button>
-                </Link>
-              )}
+              </Link>
               {isAuthenticated ? (
                 <Button 
                   variant="ghost" 

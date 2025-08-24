@@ -12,6 +12,14 @@ declare module 'express-session' {
         turnCount: number;
       };
     };
+    guestEntries?: {
+      id: string;
+      text: string;
+      aiGrowth?: string;
+      aiHint?: string;
+      createdAt: string;
+      isCompleted: number;
+    }[];
   }
 }
 import { generateConversationResponse, generateFinalizationResponse, detectDangerousContent } from "./services/gemini";
@@ -435,6 +443,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate learning insights
       const aiResponse = await generateFinalizationResponse(conversationHistory);
 
+      // Save to guest entries for display in record list
+      if (!req.session.guestEntries) {
+        req.session.guestEntries = [];
+      }
+
+      const originalText = conversation.messages.find((msg: any) => msg.role === 'user')?.content || '';
+      
+      req.session.guestEntries.push({
+        id: entryId,
+        text: originalText,
+        aiGrowth: aiResponse.growth,
+        aiHint: aiResponse.hint,
+        createdAt: new Date().toISOString(),
+        isCompleted: 1
+      });
+
       // Clear the conversation from session (optional, for cleanup)
       delete req.session.guestConversations[entryId];
 
@@ -450,6 +474,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         error: "server_error",
         message: "学びの生成に失敗しました。しばらく待ってからもう一度お試しください。"
+      });
+    }
+  });
+
+  // Get guest entries from session
+  app.get("/api/guest/entries", async (req, res) => {
+    try {
+      const guestEntries = req.session.guestEntries || [];
+      res.json(guestEntries);
+    } catch (error) {
+      console.error("Get guest entries error:", error);
+      res.status(500).json({ 
+        error: "server_error",
+        message: "記録の取得に失敗しました。"
       });
     }
   });

@@ -18,12 +18,13 @@ import { Lightbulb, Trash2 } from "lucide-react";
 interface GrowthEntryProps {
   entry: Entry;
   onHintAction: (entryId: string, action: 'tried' | 'skipped') => void;
-  onDelete: (entryId: string) => void;
+  onDelete?: (entryId: string) => void;
   isUpdating: boolean;
   isDeleting?: boolean;
+  isGuest?: boolean;
 }
 
-export default function GrowthEntry({ entry, onHintAction, onDelete, isUpdating, isDeleting = false }: GrowthEntryProps) {
+export default function GrowthEntry({ entry, onHintAction, onDelete, isUpdating, isDeleting = false, isGuest = false }: GrowthEntryProps) {
   const formatDate = (date: Date | string) => {
     const d = new Date(date);
     return d.toLocaleDateString('ja-JP', {
@@ -80,7 +81,7 @@ export default function GrowthEntry({ entry, onHintAction, onDelete, isUpdating,
                 <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
                   <AlertDialogCancel className="rounded-xl sm:rounded-2xl text-xs sm:text-sm">キャンセル</AlertDialogCancel>
                   <AlertDialogAction
-                    onClick={() => onDelete(entry.id)}
+                    onClick={() => onDelete?.(entry.id)}
                     className="bg-red-600 hover:bg-red-700 rounded-xl sm:rounded-2xl text-xs sm:text-sm"
                     data-testid={`button-confirm-delete-${entry.id}`}
                   >
