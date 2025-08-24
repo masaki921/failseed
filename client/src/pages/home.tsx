@@ -261,7 +261,7 @@ export default function Home() {
                 <div className="bg-white text-ink border border-leaf/20 px-4 py-2 rounded-2xl">
                   <div className="flex items-center space-x-2">
                     <div className="w-4 h-4 border-2 border-leaf/30 border-t-leaf rounded-full animate-spin"></div>
-                    <span>FailSeed君が考えています...</span>
+                    <span>AIが考えています...</span>
                   </div>
                 </div>
               </div>
@@ -285,7 +285,7 @@ export default function Home() {
                   <Textarea
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
-                    placeholder="FailSeed君と続きを話してください..."
+                    placeholder="AIと続きを話してください..."
                     className="flex-1 border-leaf/20 rounded-xl"
                     rows={3}
                   />
@@ -377,7 +377,7 @@ export default function Home() {
                 体験を聞かせてください
               </h3>
               <p className="text-ink/70">
-                どんな小さなことでも大丈夫です。FailSeed君が温かく受け止めます。
+                どんな小さなことでも大丈夫です。AIが温かく受け止めます。
               </p>
             </div>
 

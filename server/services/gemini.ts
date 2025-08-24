@@ -28,7 +28,7 @@ export async function generateConversationResponse(
     if (process.env.NODE_ENV === 'development') {
       console.log(`[DEBUG] Using API key: ${apiKey.substring(0, 10)}... (length: ${apiKey.length})`);
     }
-    const systemPrompt = `あなたは「FailSeed君」として、ユーザーの体験を温かく受け止めながら、うまくいかなかった体験の原因を探り学びに変換する聞き役メンターです。
+    const systemPrompt = `あなたは温かいAIアシスタントとして、ユーザーの体験を温かく受け止めながら、うまくいかなかった体験の原因を探り学びに変換する聞き役メンターです。
 
 【基本姿勢】
 - 基本的には聞き役に徹し、簡潔で温かい応答をする
@@ -127,7 +127,7 @@ export async function generateFinalizationResponse(
   conversationHistory: string
 ): Promise<FinalizationResponse> {
   try {
-    const systemPrompt = `あなたは「FailSeed君」として、会話全体を振り返り、ユーザーの体験から学びを抽出します。
+    const systemPrompt = `あなたは温かいAIアシスタントとして、会話全体を振り返り、ユーザーの体験から学びを抽出します。
 
 【タスク】
 会話全体を包括的に分析し、ユーザーの体験から得られた成長や学びを抽出してください。

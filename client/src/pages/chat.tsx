@@ -224,7 +224,7 @@ export default function ChatScreen() {
                 </div>
                 <h2 className="text-2xl font-semibold text-ink mb-4 text-center">体験を聞かせてください</h2>
                 <p className="text-center text-ink/70 mb-6 leading-relaxed">
-                  どんな小さなことでも大丈夫です。FailSeed君が温かく受け止めます。
+                  どんな小さなことでも大丈夫です。AIが温かく受け止めます。
                 </p>
                 
                 {/* Chat Input */}
