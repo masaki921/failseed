@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ArrowRight
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const onboardingSteps = [
   {
@@ -140,8 +141,16 @@ const onboardingSteps = [
 ];
 
 export default function Onboarding() {
+  const { isLoading, isAuthenticated } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [, setLocation] = useLocation();
+
+  // 認証されていない場合はログインページにリダイレクト
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      setLocation('/login');
+    }
+  }, [isLoading, isAuthenticated, setLocation]);
 
   const handleNext = () => {
     if (currentStep < onboardingSteps.length - 1) {
@@ -162,6 +171,20 @@ export default function Onboarding() {
   };
 
   const currentStepData = onboardingSteps[currentStep];
+
+  // ローディング中
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-sage flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-leaf/30 border-t-leaf rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // 認証されていない場合はリダイレクト処理中なので何も表示しない
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-sage flex items-center justify-center p-4">

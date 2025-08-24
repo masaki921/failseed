@@ -3,9 +3,10 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Calendar, Lightbulb, Target, Sprout } from "lucide-react";
+import { MessageCircle, Calendar, Lightbulb, Target, Sprout, LogOut } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
 
 // 偉人の名言データ
 const inspirationalQuotes = [
@@ -129,6 +130,7 @@ interface Message {
 }
 
 export default function Home() {
+  const { user, isLoading, isAuthenticated, logout } = useAuth();
   const [text, setText] = useState("");
   const [isStarting, setIsStarting] = useState(false);
   const [isChatting, setIsChatting] = useState(false);
@@ -138,6 +140,13 @@ export default function Home() {
   const [conversationState, setConversationState] = useState<'initial' | 'ongoing' | 'complete'>('initial');
   const [, setLocation] = useLocation();
   const todaysQuote = getTodaysQuote();
+
+  // 認証されていない場合はログインページにリダイレクト
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      setLocation('/login');
+    }
+  }, [isLoading, isAuthenticated, setLocation]);
 
   // 初回訪問チェックとオンボーディングリダイレクト
   useEffect(() => {
@@ -314,6 +323,20 @@ export default function Home() {
     );
   }
 
+  // ローディング中は何も表示しない
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-sage flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-leaf/30 border-t-leaf rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // 認証されていない場合はリダイレクト処理中なので何も表示しない
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-sage">
       {/* ヘッダー */}
@@ -344,6 +367,18 @@ export default function Home() {
                   記録一覧
                 </Button>
               </Link>
+              {isAuthenticated && (
+                <Button 
+                  variant="ghost" 
+                  className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-2xl text-sm"
+                  size="sm"
+                  onClick={() => logout.mutate()}
+                  disabled={logout.isPending}
+                >
+                  <LogOut className="w-4 h-4 mr-1" />
+                  ログアウト
+                </Button>
+              )}
             </nav>
           </div>
         </div>

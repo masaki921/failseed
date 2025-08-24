@@ -3,9 +3,19 @@ import { pgTable, text, varchar, timestamp, integer } from "drizzle-orm/pg-core"
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Users table for authentication
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email", { length: 255 }).unique().notNull(),
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const entries = pgTable("entries", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  sessionId: varchar("session_id").default('legacy').notNull(), // セッションIDでユーザーを識別
+  userId: varchar("user_id").references(() => users.id), // ユーザーIDで識別
+  sessionId: varchar("session_id").default('legacy'), // 後方互換性のため保持
   createdAt: timestamp("created_at").defaultNow().notNull(),
   text: text("text").notNull(), // Initial event description
   conversationHistory: text("conversation_history"), // JSON array of conversation messages
@@ -44,6 +54,22 @@ export type StartConversationInput = z.infer<typeof startConversationSchema>;
 export type ContinueConversationInput = z.infer<typeof continueConversationSchema>;
 export type FinalizeConversationInput = z.infer<typeof finalizeConversationSchema>;
 export type UpdateHint = z.infer<typeof updateHintSchema>;
+
+// User authentication schemas
+export const registerUserSchema = z.object({
+  email: z.string().email("有効なメールアドレスを入力してください"),
+  password: z.string().min(8, "パスワードは8文字以上で入力してください"),
+});
+
+export const loginUserSchema = z.object({
+  email: z.string().email("有効なメールアドレスを入力してください"),
+  password: z.string().min(1, "パスワードを入力してください"),
+});
+
+// User type definitions
+export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof registerUserSchema>;
+export type LoginUser = z.infer<typeof loginUserSchema>;
 
 // Conversation message structure
 export interface ConversationMessage {

@@ -6,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { apiRequest } from "@/lib/queryClient";
 import { type Entry, type UpdateHint } from "@shared/schema";
 import GrowthEntry from "../components/growth-entry";
-import { Sprout, MessageCircle, List, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Sprout, MessageCircle, List, Calendar, ChevronLeft, ChevronRight, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 // Simple date utilities
 const formatDate = (date: Date, formatStr: string) => {
@@ -55,12 +56,20 @@ const getCalendarDays = (date: Date) => {
 };
 
 export default function GrowthList() {
+  const { user, isLoading, isAuthenticated, logout } = useAuth();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  const { data: entries = [], isLoading } = useQuery<Entry[]>({
+  // 認証されていない場合はログインページにリダイレクト
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      setLocation('/login');
+    }
+  }, [isLoading, isAuthenticated, setLocation]);
+
+  const { data: entries = [], isLoading: isEntriesLoading } = useQuery<Entry[]>({
     queryKey: ['/api/grows'],
   });
 
@@ -277,7 +286,8 @@ export default function GrowthList() {
     );
   };
 
-  if (isLoading) {
+  // ローディング中
+  if (isLoading || isEntriesLoading) {
     return (
       <div className="min-h-screen bg-sage flex items-center justify-center">
         <div className="text-center">
@@ -286,6 +296,11 @@ export default function GrowthList() {
         </div>
       </div>
     );
+  }
+
+  // 認証されていない場合はリダイレクト処理中なので何も表示しない
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (
@@ -307,6 +322,18 @@ export default function GrowthList() {
             <Button className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl">
               記録一覧
             </Button>
+            {isAuthenticated && (
+              <Button 
+                variant="ghost" 
+                className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-2xl text-sm"
+                size="sm"
+                onClick={() => logout.mutate()}
+                disabled={logout.isPending}
+              >
+                <LogOut className="w-4 h-4 mr-1" />
+                ログアウト
+              </Button>
+            )}
           </nav>
           </div>
         </div>

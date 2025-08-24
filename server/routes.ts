@@ -3,11 +3,9 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 
 // Session interface extension for TypeScript
-declare global {
-  namespace Express {
-    interface Request {
-      session: import('express-session').Session & Partial<import('express-session').SessionData>;
-    }
+declare module 'express-session' {
+  export interface SessionData {
+    userId?: string;
   }
 }
 import { generateConversationResponse, generateFinalizationResponse, detectDangerousContent } from "./services/gemini";
@@ -15,16 +13,186 @@ import {
   startConversationSchema, 
   continueConversationSchema, 
   finalizeConversationSchema,
-  updateHintSchema, 
+  updateHintSchema,
+  registerUserSchema,
+  loginUserSchema,
   type AIConversationResponse, 
   type AIFinalizationResponse,
-  type ConversationMessage 
+  type ConversationMessage,
+  type User 
 } from "@shared/schema";
+
+// Authentication middleware
+const requireAuth = async (req: Request, res: any, next: any) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({
+        error: "not_authenticated",
+        message: "この機能を使用するにはログインが必要です。"
+      });
+    }
+    
+    const user = await storage.getUserById(req.session.userId);
+    if (!user) {
+      // User not found, clear session
+      req.session.destroy(() => {});
+      return res.status(401).json({
+        error: "user_not_found",
+        message: "ユーザーが見つかりません。再度ログインしてください。"
+      });
+    }
+    
+    // Attach user to request for convenience
+    (req as any).user = user;
+    next();
+  } catch (error) {
+    console.error("Auth middleware error:", error);
+    res.status(500).json({
+      error: "server_error",
+      message: "認証の確認に失敗しました。"
+    });
+  }
+};
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
+  // Authentication routes
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const userData = registerUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(400).json({
+          error: "user_exists",
+          message: "このメールアドレスは既に登録されています。"
+        });
+      }
+      
+      // Create new user
+      const user = await storage.createUser(userData);
+      
+      // Store user ID in session
+      req.session.userId = user.id;
+      
+      // Return user data without password hash
+      const { passwordHash, ...userResponse } = user;
+      res.status(201).json(userResponse);
+    } catch (error: any) {
+      console.error("Register error:", error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({
+          error: "validation_error",
+          message: "入力内容に不備があります。",
+          details: error.errors
+        });
+      }
+      res.status(500).json({
+        error: "server_error",
+        message: "ユーザー登録に失敗しました。"
+      });
+    }
+  });
+
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const loginData = loginUserSchema.parse(req.body);
+      
+      // Get user by email
+      const user = await storage.getUserByEmail(loginData.email);
+      if (!user) {
+        return res.status(401).json({
+          error: "invalid_credentials",
+          message: "メールアドレスまたはパスワードが正しくありません。"
+        });
+      }
+      
+      // Verify password
+      const isValidPassword = await storage.verifyPassword(loginData.password, user.passwordHash);
+      if (!isValidPassword) {
+        return res.status(401).json({
+          error: "invalid_credentials",
+          message: "メールアドレスまたはパスワードが正しくありません。"
+        });
+      }
+      
+      // Store user ID in session
+      req.session.userId = user.id;
+      
+      // Return user data without password hash
+      const { passwordHash, ...userResponse } = user;
+      res.json(userResponse);
+    } catch (error: any) {
+      console.error("Login error:", error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({
+          error: "validation_error",
+          message: "入力内容に不備があります。",
+          details: error.errors
+        });
+      }
+      res.status(500).json({
+        error: "server_error",
+        message: "ログインに失敗しました。"
+      });
+    }
+  });
+
+  app.post("/api/auth/logout", async (req, res) => {
+    try {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Logout error:", err);
+          return res.status(500).json({
+            error: "server_error",
+            message: "ログアウトに失敗しました。"
+          });
+        }
+        res.json({ message: "ログアウトしました。" });
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+      res.status(500).json({
+        error: "server_error",
+        message: "ログアウトに失敗しました。"
+      });
+    }
+  });
+
+  app.get("/api/auth/current-user", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({
+          error: "not_authenticated",
+          message: "ログインしていません。"
+        });
+      }
+      
+      const user = await storage.getUserById(req.session.userId);
+      if (!user) {
+        // User not found, clear session
+        req.session.destroy(() => {});
+        return res.status(401).json({
+          error: "user_not_found",
+          message: "ユーザーが見つかりません。"
+        });
+      }
+      
+      // Return user data without password hash
+      const { passwordHash, ...userResponse } = user;
+      res.json(userResponse);
+    } catch (error) {
+      console.error("Current user error:", error);
+      res.status(500).json({
+        error: "server_error",
+        message: "ユーザー情報の取得に失敗しました。"
+      });
+    }
+  });
+
   // Start new conversation
-  app.post("/api/conversation/start", async (req, res) => {
+  app.post("/api/conversation/start", requireAuth, async (req, res) => {
     try {
       const { text } = startConversationSchema.parse(req.body);
       
@@ -48,19 +216,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Get or create session ID - デプロイ環境デバッグ
-      if (!req.session.id) {
-        req.session.save(() => {}); // Generate session ID if not exists
-      }
-      const sessionId = req.session.id!;
+      // Get authenticated user ID
+      const userId = req.session.userId!;
       
       // セキュリティ: 本番環境ではデバッグログを出力しない
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[DEBUG] Session: ${sessionId.substring(0, 8)}..., Text length: ${text.length}`);
+        console.log(`[DEBUG] User: ${userId.substring(0, 8)}..., Text length: ${text.length}`);
       }
 
       // Create new conversation entry
-      const entry = await storage.createConversation(text, sessionId);
+      const entry = await storage.createConversation(text, userId);
 
       // Generate AI response with conversation turn count
       const aiResponse = await generateConversationResponse("", text, 1);
@@ -99,7 +264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Continue conversation
-  app.post("/api/conversation/continue", async (req, res) => {
+  app.post("/api/conversation/continue", requireAuth, async (req, res) => {
     try {
       const { entryId, message } = continueConversationSchema.parse(req.body);
       
@@ -111,19 +276,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Get or create session ID - デプロイ環境デバッグ
-      if (!req.session.id) {
-        req.session.save(() => {}); // Generate session ID if not exists
-      }
-      const sessionId = req.session.id!;
+      // Get authenticated user ID
+      const userId = req.session.userId!;
       
       // セキュリティ: 本番環境ではデバッグログを出力しない
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[DEBUG] Session: ${sessionId.substring(0, 8)}..., EntryId: ${entryId}`);
+        console.log(`[DEBUG] User: ${userId.substring(0, 8)}..., EntryId: ${entryId}`);
       }
 
       // Get the conversation entry
-      const entry = await storage.getEntry(entryId, sessionId);
+      const entry = await storage.getEntry(entryId, userId);
       if (!entry) {
         return res.status(404).json({ 
           error: "not_found",
@@ -193,18 +355,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Finalize conversation and extract learning
-  app.post("/api/conversation/finalize", async (req, res) => {
+  app.post("/api/conversation/finalize", requireAuth, async (req, res) => {
     try {
       const { entryId } = finalizeConversationSchema.parse(req.body);
 
-      // Get or create session ID
-      if (!req.session.id) {
-        req.session.save(() => {}); // Generate session ID if not exists
-      }
-      const sessionId = req.session.id!;
+      // Get authenticated user ID
+      const userId = req.session.userId!;
 
       // Get the conversation entry
-      const entry = await storage.getEntry(entryId, sessionId);
+      const entry = await storage.getEntry(entryId, userId);
       if (!entry) {
         return res.status(404).json({ 
           error: "not_found",
@@ -272,20 +431,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all completed entries
-  app.get("/api/grows", async (req, res) => {
+  app.get("/api/grows", requireAuth, async (req, res) => {
     try {
-      // Get or create session ID - デプロイ環境デバッグ
-      if (!req.session.id) {
-        req.session.save(() => {}); // Generate session ID if not exists
-      }
-      const sessionId = req.session.id!;
+      // Get authenticated user ID
+      const userId = req.session.userId!;
       
       // セキュリティ: 本番環境ではデバッグログを出力しない
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[DEBUG] Session: ${sessionId.substring(0, 8)}..., requesting entries`);
+        console.log(`[DEBUG] User: ${userId.substring(0, 8)}..., requesting entries`);
       }
 
-      const entries = await storage.getAllCompletedEntries(sessionId);
+      const entries = await storage.getAllCompletedEntries(userId);
       
       if (process.env.NODE_ENV === 'development') {
         console.log(`[DEBUG] Found ${entries.length} entries for session`);

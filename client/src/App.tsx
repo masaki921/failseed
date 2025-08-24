@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "./pages/home";
 import GrowthList from "./pages/growth-list";
 import Onboarding from "./pages/onboarding";
+import Login from "./pages/login";
+import Register from "./pages/register";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -14,6 +16,8 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/growth" component={GrowthList} />
       <Route path="/onboarding" component={Onboarding} />
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
       <Route component={NotFound} />
     </Switch>
   );
