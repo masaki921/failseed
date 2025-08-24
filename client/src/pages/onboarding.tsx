@@ -167,7 +167,7 @@ export default function Onboarding() {
   const handleStart = () => {
     // オンボーディング完了をローカルストレージに記録
     localStorage.setItem('failseed_onboarding_completed', 'true');
-    setLocation('/');
+    setLocation('/login');
   };
 
   const currentStepData = onboardingSteps[currentStep];
@@ -249,7 +249,7 @@ export default function Onboarding() {
                   className="bg-leaf hover:bg-leaf/90 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl shadow-sm text-sm sm:text-base order-1 sm:order-2"
                   size="lg"
                 >
-                  <span className="mr-1 sm:mr-2">はじめる</span>
+                  <span className="mr-1 sm:mr-2">アカウント作成</span>
                   <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
               ) : (
@@ -266,8 +266,8 @@ export default function Onboarding() {
           </CardContent>
         </Card>
 
-        {/* スキップボタン */}
-        <div className="text-center mt-4 sm:mt-6">
+        {/* スキップボタンとゲストモード */}
+        <div className="text-center mt-4 sm:mt-6 space-y-2">
           <Button
             variant="ghost"
             onClick={handleStart}
@@ -275,6 +275,15 @@ export default function Onboarding() {
             size="sm"
           >
             スキップして始める
+          </Button>
+          <div className="text-ink/40 text-xs">または</div>
+          <Button
+            variant="outline"
+            onClick={() => setLocation('/?guest=true')}
+            className="text-leaf border-leaf/30 hover:bg-leaf/10 rounded-xl sm:rounded-2xl text-sm sm:text-base"
+            size="sm"
+          >
+            ログインせずに利用する
           </Button>
         </div>
       </div>

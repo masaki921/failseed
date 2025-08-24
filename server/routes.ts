@@ -412,6 +412,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Guest mode conversation finalize (show learning without saving)
+  app.post("/api/guest/conversation/finalize", async (req, res) => {
+    try {
+      const { entryId } = finalizeConversationSchema.parse(req.body);
+
+      // Get guest conversation from session
+      if (!req.session.guestConversations || !req.session.guestConversations[entryId]) {
+        return res.status(404).json({ 
+          error: "not_found",
+          message: "会話が見つかりません。"
+        });
+      }
+
+      const conversation = req.session.guestConversations[entryId];
+
+      // Build conversation history for AI
+      const conversationHistory = conversation.messages.map((msg: any) => 
+        `${msg.role === 'user' ? 'ユーザー' : 'FailSeed君'}: ${msg.content}`
+      ).join('\n\n');
+
+      // Generate learning insights
+      const aiResponse = await generateFinalizationResponse(conversationHistory);
+
+      // Clear the conversation from session (optional, for cleanup)
+      delete req.session.guestConversations[entryId];
+
+      const response: AIFinalizationResponse = {
+        growth: aiResponse.growth,
+        hint: aiResponse.hint,
+        entryId: entryId
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error("Guest conversation finalize error:", error);
+      res.status(500).json({ 
+        error: "server_error",
+        message: "学びの生成に失敗しました。しばらく待ってからもう一度お試しください。"
+      });
+    }
+  });
+
   // Continue conversation
   app.post("/api/conversation/continue", requireAuth, async (req, res) => {
     try {

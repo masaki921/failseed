@@ -144,22 +144,17 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const todaysQuote = getTodaysQuote();
 
-  // 認証されていない場合はログインページにリダイレクト（ゲストモード以外）
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated && !isGuestMode) {
-      setLocation('/login');
-    }
-  }, [isLoading, isAuthenticated, isGuestMode, setLocation]);
-
   // 初回訪問チェックとオンボーディングリダイレクト（ゲストモード以外）
   useEffect(() => {
-    if (!isGuestMode) {
+    if (!isLoading && !isAuthenticated && !isGuestMode) {
       const hasCompletedOnboarding = localStorage.getItem('failseed_onboarding_completed');
       if (!hasCompletedOnboarding) {
         setLocation('/onboarding');
+      } else {
+        setLocation('/login');
       }
     }
-  }, [setLocation, isGuestMode]);
+  }, [isLoading, isAuthenticated, isGuestMode, setLocation]);
 
   const startConversationMutation = useMutation({
     mutationFn: async (message: string) => {
@@ -214,7 +209,8 @@ export default function Home() {
 
   const finalizeConversationMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/conversation/finalize', {
+      const endpoint = isGuestMode ? '/api/guest/conversation/finalize' : '/api/conversation/finalize';
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ entryId: currentEntryId })
@@ -224,9 +220,11 @@ export default function Home() {
     },
     onSuccess: () => {
       setConversationState('complete');
-      setTimeout(() => {
-        window.location.href = '/growth';
-      }, 2000);
+      if (!isGuestMode) {
+        setTimeout(() => {
+          window.location.href = '/growth';
+        }, 2000);
+      }
     }
   });
 
@@ -315,27 +313,26 @@ export default function Home() {
                 </div>
               </div>
               <div className="text-center">
-                {isGuestMode ? (
-                  <div className="space-y-3">
-                    <p className="text-sm text-ink/70 mb-2">
-                      学びとして保存するには、アカウント作成が必要です
-                    </p>
+                <Button 
+                  onClick={() => finalizeConversationMutation.mutate()}
+                  disabled={finalizeConversationMutation.isPending}
+                  className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl px-8"
+                >
+                  {isGuestMode ? '学びを見る（保存されません）' : '学びに変換する'}
+                </Button>
+                {isGuestMode && (
+                  <div className="mt-3">
+                    <p className="text-xs text-ink/60 mb-2">学びを保存するには</p>
                     <Link href="/register">
                       <Button 
-                        className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl px-8"
+                        variant="outline"
+                        className="text-leaf border-leaf/30 hover:bg-leaf/10 rounded-xl text-sm"
+                        size="sm"
                       >
-                        アカウント作成して保存
+                        アカウント作成
                       </Button>
                     </Link>
                   </div>
-                ) : (
-                  <Button 
-                    onClick={() => finalizeConversationMutation.mutate()}
-                    disabled={finalizeConversationMutation.isPending}
-                    className="bg-leaf text-white hover:bg-leaf/90 rounded-2xl px-8"
-                  >
-                    学びに変換する
-                  </Button>
                 )}
               </div>
             </div>
@@ -372,29 +369,38 @@ export default function Home() {
               <h1 className="text-lg sm:text-xl font-semibold text-ink">FailSeed</h1>
             </div>
             <nav className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
-              {!isGuestMode && (
-                <>
-                  <Link href="/onboarding">
-                    <Button 
-                      variant="ghost" 
-                      className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
-                      size="sm"
-                    >
-                      <span className="hidden sm:inline">使い方</span>
-                      <span className="sm:hidden">?</span>
-                    </Button>
-                  </Link>
-                  <Link href="/growth">
-                    <Button 
-                      variant="outline" 
-                      className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
-                      size="sm"
-                    >
-                      <span className="hidden sm:inline">記録一覧</span>
-                      <span className="sm:hidden">記録</span>
-                    </Button>
-                  </Link>
-                </>
+              <Link href="/onboarding">
+                <Button 
+                  variant="ghost" 
+                  className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
+                  size="sm"
+                >
+                  <span className="hidden sm:inline">使い方</span>
+                  <span className="sm:hidden">?</span>
+                </Button>
+              </Link>
+              {isGuestMode ? (
+                <Button 
+                  variant="outline" 
+                  className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3 opacity-50 cursor-not-allowed"
+                  size="sm"
+                  disabled
+                  title="記録機能を使うにはアカウント作成が必要です"
+                >
+                  <span className="hidden sm:inline">記録一覧</span>
+                  <span className="sm:hidden">記録</span>
+                </Button>
+              ) : (
+                <Link href="/growth">
+                  <Button 
+                    variant="outline" 
+                    className="text-ink border-leaf/20 hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
+                    size="sm"
+                  >
+                    <span className="hidden sm:inline">記録一覧</span>
+                    <span className="sm:hidden">記録</span>
+                  </Button>
+                </Link>
               )}
               {isAuthenticated ? (
                 <Button 
