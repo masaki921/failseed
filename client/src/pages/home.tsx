@@ -387,23 +387,19 @@ export default function Home() {
                   <span className="hidden md:inline ml-1">ログアウト</span>
                 </Button>
               ) : isGuestMode ? (
-                <div className="flex items-center space-x-1 sm:space-x-2">
-                  <Link href="/login">
-                    <Button 
-                      variant="outline" 
-                      className="text-leaf border-leaf/30 hover:bg-leaf/10 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
-                      size="sm"
-                    >
-                      ログイン
-                    </Button>
-                  </Link>
+                <div className="flex flex-col items-end space-y-1">
                   <Link href="/register">
                     <Button 
                       className="bg-leaf text-white hover:bg-leaf/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
                       size="sm"
                     >
-                      新規登録
+                      アカウント作成
                     </Button>
+                  </Link>
+                  <Link href="/login">
+                    <span className="text-xs text-ink/60 hover:text-ink underline">
+                      ログイン
+                    </span>
                   </Link>
                 </div>
               ) : null}
@@ -482,24 +478,23 @@ export default function Home() {
                         無料でアカウントを作成して、AIとの対話と成長記録を始めましょう
                       </p>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center">
-                      <Link href="/register" className="flex-1 sm:flex-none">
+                    <div className="text-center space-y-3">
+                      <Link href="/register">
                         <Button 
-                          className="w-full sm:w-auto bg-leaf hover:bg-leaf/90 text-white px-6 py-3 rounded-2xl shadow-sm text-sm sm:text-base"
+                          className="w-full sm:w-auto bg-leaf hover:bg-leaf/90 text-white px-8 py-3 rounded-2xl shadow-sm text-sm sm:text-base"
                           size="lg"
                         >
-                          <span className="mr-2">新規登録して始める</span>
+                          <span className="mr-2">アカウント作成して始める</span>
                         </Button>
                       </Link>
-                      <Link href="/login" className="flex-1 sm:flex-none">
-                        <Button 
-                          variant="outline"
-                          className="w-full sm:w-auto border-leaf/30 text-leaf hover:bg-leaf/10 px-6 py-3 rounded-2xl text-sm sm:text-base"
-                          size="lg"
-                        >
-                          ログイン
-                        </Button>
-                      </Link>
+                      <div className="text-sm text-ink/60">
+                        既にアカウントをお持ちの方は{" "}
+                        <Link href="/login">
+                          <span className="text-leaf hover:text-leaf/80 underline font-medium cursor-pointer">
+                            こちらからログイン
+                          </span>
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 ) : null}
