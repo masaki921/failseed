@@ -481,10 +481,33 @@ export default function Home() {
                       {isStarting ? '対話開始中...' : '対話する'}
                     </Button>
                     {isGuestMode && (
-                      <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-3 text-center">
-                        <p className="text-yellow-700 text-xs sm:text-sm">
-                          💡 ゲストモードでは対話は保存されません。記録を残すには<Link href="/register" className="text-leaf hover:text-leaf/80 underline font-medium">アカウント作成</Link>をお勧めします。
-                        </p>
+                      <div className="space-y-3">
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 text-center">
+                          <p className="text-yellow-800 text-sm sm:text-base mb-2">
+                            💫 体験を記録として保存するには、アカウント登録が必要です
+                          </p>
+                          <p className="text-yellow-700 text-xs sm:text-sm">
+                            無料でアカウントを作成して、AIとの対話と成長記録を始めましょう
+                          </p>
+                        </div>
+                        <div className="text-center space-y-3">
+                          <Link href="/register">
+                            <Button 
+                              className="w-full sm:w-auto bg-leaf hover:bg-leaf/90 text-white px-8 py-3 rounded-2xl shadow-sm text-sm sm:text-base"
+                              size="lg"
+                            >
+                              <span className="mr-2">アカウント作成して始める</span>
+                            </Button>
+                          </Link>
+                          <div className="text-sm text-ink/60">
+                            既にアカウントをお持ちの方は{" "}
+                            <Link href="/login">
+                              <span className="text-leaf hover:text-leaf/80 underline font-medium cursor-pointer">
+                                こちらからログイン
+                              </span>
+                            </Link>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
