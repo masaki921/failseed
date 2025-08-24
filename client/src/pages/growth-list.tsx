@@ -340,8 +340,8 @@ export default function GrowthList() {
     );
   };
 
-  // ローディング中
-  if (isLoading || isEntriesLoading) {
+  // ローディング中（ゲストモードでは認証チェックをスキップ）
+  if (isLoading || (!isGuestMode && isEntriesLoading)) {
     return (
       <div className="min-h-screen bg-sage flex items-center justify-center">
         <div className="text-center">
@@ -352,8 +352,8 @@ export default function GrowthList() {
     );
   }
 
-  // 認証されていない場合はリダイレクト処理中なので何も表示しない
-  if (!isAuthenticated) {
+  // 認証されていない場合はリダイレクト処理中なので何も表示しない（ゲストモードは除く）
+  if (!isAuthenticated && !isGuestMode) {
     return null;
   }
 
@@ -377,7 +377,7 @@ export default function GrowthList() {
               <span className="hidden sm:inline">記録一覧</span>
               <span className="sm:hidden">記録</span>
             </Button>
-            {isAuthenticated && (
+            {isAuthenticated ? (
               <Button 
                 variant="ghost" 
                 className="text-ink/70 hover:text-ink hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-1 sm:px-2"
@@ -388,7 +388,29 @@ export default function GrowthList() {
                 <LogOut className="w-4 h-4" />
                 <span className="hidden md:inline ml-1">ログアウト</span>
               </Button>
-            )}
+            ) : isGuestMode ? (
+              <div className="flex items-center space-x-2">
+                <Link href="/register">
+                  <Button 
+                    size="sm"
+                    className="bg-leaf text-white hover:bg-leaf/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
+                  >
+                    <span className="hidden sm:inline">アカウント作成</span>
+                    <span className="sm:hidden">登録</span>
+                  </Button>
+                </Link>
+                <Link href="/login">
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    className="border-leaf/20 hover:bg-soil/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
+                  >
+                    <span className="hidden sm:inline">ログイン</span>
+                    <span className="sm:hidden">Login</span>
+                  </Button>
+                </Link>
+              </div>
+            ) : null}
           </nav>
           </div>
         </div>
