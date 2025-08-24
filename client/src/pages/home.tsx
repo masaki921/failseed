@@ -341,62 +341,6 @@ export default function Home() {
 
       {/* メインコンテンツ */}
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* コンセプト説明セクション */}
-        <Card className="rounded-3xl shadow-sm border-leaf/5 mb-8">
-          <CardContent className="p-8">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center mx-auto mb-6">
-                <Sprout className="w-8 h-8 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-ink mb-4">
-                うまくいかなかった体験を成長の種に変えよう
-              </h2>
-              <p className="text-lg text-ink/80 max-w-2xl mx-auto leading-relaxed">
-                FailSeedは、あなたの体験を温かく受け止めて、学びに変換するAIパートナーです。
-                うまくいかなかった体験や困難だった出来事も、適切な振り返りによって貴重な成長の種になります。
-              </p>
-            </div>
-
-            {/* プロセス説明（イラスト風） */}
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
-              <div className="p-6 bg-sage/30 rounded-2xl border-leaf/10">
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-leaf/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <MessageCircle className="w-6 h-6 text-leaf" />
-                  </div>
-                  <h3 className="font-semibold text-ink mb-2">1. 体験を話す</h3>
-                  <p className="text-sm text-ink/70">
-                    FailSeed君と自然に対話しながら、あなたの体験を共有します
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-6 bg-sage/30 rounded-2xl border-leaf/10">
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-leaf/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Lightbulb className="w-6 h-6 text-leaf" />
-                  </div>
-                  <h3 className="font-semibold text-ink mb-2">2. 学びを発見</h3>
-                  <p className="text-sm text-ink/70">
-                    AIが体験から価値ある気づきと学びを抽出します
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-6 bg-sage/30 rounded-2xl border-leaf/10">
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-leaf/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Target className="w-6 h-6 text-leaf" />
-                  </div>
-                  <h3 className="font-semibold text-ink mb-2">3. 成長を記録</h3>
-                  <p className="text-sm text-ink/70">
-                    学びを記録し、継続的な成長を可視化します
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* 名言セクション */}
         <Card className="mb-8 bg-sage/20 border-leaf/10 rounded-3xl shadow-sm">

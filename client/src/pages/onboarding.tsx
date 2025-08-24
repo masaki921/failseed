@@ -23,16 +23,21 @@ const onboardingSteps = [
           <Sprout className="w-12 h-12 text-white" />
         </div>
         <p className="text-lg text-ink/80 mb-6 leading-relaxed">
-          FailSeedは、うまくいかなかった体験や困難な出来事を、
+          温かいAIパートナー「FailSeed君」との対話を通じて、
           <br className="hidden sm:block" />
-          温かいAI対話を通じて価値ある学びに変換するアプリです。
+          うまくいかなかった体験を学びに変換します。
         </p>
         <div className="bg-sage/30 p-4 rounded-2xl">
-          <p className="text-ink/70 text-sm">
-            "うまくいかなかった体験" も、適切な振り返りによって
-            <br className="hidden sm:block" />
-            貴重な成長の種になります
-          </p>
+          <div className="flex items-center justify-center space-x-2 text-ink/70">
+            <MessageCircle className="w-5 h-5" />
+            <span>対話</span>
+            <span>→</span>
+            <Lightbulb className="w-5 h-5" />
+            <span>学び</span>
+            <span>→</span>
+            <Target className="w-5 h-5" />
+            <span>成長</span>
+          </div>
         </div>
       </div>
     )
