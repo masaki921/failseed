@@ -11,7 +11,6 @@ import Register from "./pages/register";
 import NotFound from "@/pages/not-found";
 
 function Router() {
-  console.log("Router component rendering...");
   return (
     <Switch>
       <Route path="/" component={Home} />
@@ -25,7 +24,6 @@ function Router() {
 }
 
 function App() {
-  console.log("App component rendering...");
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
