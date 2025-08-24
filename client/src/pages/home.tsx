@@ -151,13 +151,15 @@ export default function Home() {
     }
   }, [isLoading, isAuthenticated, isGuestMode, setLocation]);
 
-  // 初回訪問チェックとオンボーディングリダイレクト
+  // 初回訪問チェックとオンボーディングリダイレクト（ゲストモード以外）
   useEffect(() => {
-    const hasCompletedOnboarding = localStorage.getItem('failseed_onboarding_completed');
-    if (!hasCompletedOnboarding) {
-      setLocation('/onboarding');
+    if (!isGuestMode) {
+      const hasCompletedOnboarding = localStorage.getItem('failseed_onboarding_completed');
+      if (!hasCompletedOnboarding) {
+        setLocation('/onboarding');
+      }
     }
-  }, [setLocation]);
+  }, [setLocation, isGuestMode]);
 
   const startConversationMutation = useMutation({
     mutationFn: async (message: string) => {
@@ -335,8 +337,8 @@ export default function Home() {
     );
   }
 
-  // 認証されていない場合はリダイレクト処理中なので何も表示しない
-  if (!isAuthenticated) {
+  // 認証されていない場合はリダイレクト処理中なので何も表示しない（ゲストモード以外）
+  if (!isAuthenticated && !isGuestMode) {
     return null;
   }
 
