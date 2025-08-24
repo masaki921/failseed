@@ -386,22 +386,6 @@ export default function Home() {
                   <LogOut className="w-4 h-4" />
                   <span className="hidden md:inline ml-1">ログアウト</span>
                 </Button>
-              ) : isGuestMode ? (
-                <div className="flex flex-col items-end space-y-1">
-                  <Link href="/register">
-                    <Button 
-                      className="bg-leaf text-white hover:bg-leaf/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
-                      size="sm"
-                    >
-                      アカウント作成
-                    </Button>
-                  </Link>
-                  <Link href="/login">
-                    <span className="text-xs text-ink/60 hover:text-ink underline">
-                      ログイン
-                    </span>
-                  </Link>
-                </div>
               ) : null}
             </nav>
           </div>
