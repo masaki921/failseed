@@ -30,9 +30,10 @@ interface SafetyError {
 
 export default function ChatScreen() {
   const [location, setLocation] = useLocation();
-  // URLパラメータから初期テキストを取得
+  // URLパラメータから初期テキストとゲストモードを取得
   const urlParams = new URLSearchParams(window.location.search);
   const initialTextFromUrl = urlParams.get('initialText') || '';
+  const isGuestMode = urlParams.get('guest') === 'true';
   const [conversationState, setConversationState] = useState<'initial' | 'ongoing' | 'finalizing' | 'complete'>('initial');
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
@@ -51,7 +52,8 @@ export default function ChatScreen() {
 
   const startConversationMutation = useMutation({
     mutationFn: async (data: StartConversationInput) => {
-      const response = await apiRequest("POST", "/api/conversation/start", data);
+      const endpoint = isGuestMode ? "/api/guest/conversation/start" : "/api/conversation/start";
+      const response = await apiRequest("POST", endpoint, data);
       return response.json() as Promise<AIConversationResponse>;
     },
     onSuccess: (data) => {
@@ -89,7 +91,8 @@ export default function ChatScreen() {
 
   const continueConversationMutation = useMutation({
     mutationFn: async (data: ContinueConversationInput) => {
-      const response = await apiRequest("POST", "/api/conversation/continue", data);
+      const endpoint = isGuestMode ? "/api/guest/conversation/continue" : "/api/conversation/continue";
+      const response = await apiRequest("POST", endpoint, data);
       return response.json() as Promise<AIConversationResponse>;
     },
     onSuccess: (data) => {
@@ -125,7 +128,8 @@ export default function ChatScreen() {
 
   const finalizeConversationMutation = useMutation({
     mutationFn: async (entryId: string) => {
-      const response = await apiRequest("POST", "/api/conversation/finalize", { entryId });
+      const endpoint = isGuestMode ? "/api/guest/conversation/finalize" : "/api/conversation/finalize";
+      const response = await apiRequest("POST", endpoint, { entryId });
       return response.json() as Promise<AIFinalizationResponse>;
     },
     onSuccess: (data) => {
@@ -139,6 +143,13 @@ export default function ChatScreen() {
       ]);
       
       setConversationState('complete');
+      
+      // 2秒後に記録一覧ページに遷移
+      setTimeout(() => {
+        const targetPath = isGuestMode ? "/growth?guest=true" : "/growth";
+        const entryId = data.entryId;
+        setLocation(`${targetPath}#${entryId}`);
+      }, 2000);
     },
     onError: (error: any) => {
       console.error("Finalize error:", error);
