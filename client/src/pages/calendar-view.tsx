@@ -186,7 +186,7 @@ export default function CalendarView() {
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`min-h-[80px] sm:min-h-[120px] p-1 sm:p-2 border rounded-lg relative ${
+                    className={`aspect-square sm:h-[120px] p-2 border rounded-lg relative overflow-hidden ${
                       isCurrentMonth
                         ? isDayToday
                           ? 'bg-leaf/10 border-leaf/30'
@@ -211,13 +211,13 @@ export default function CalendarView() {
                       {dayEntries.slice(0, 3).map((entry, index) => (
                         <div
                           key={entry.id}
-                          className="text-xs sm:text-xs p-0.5 sm:p-1 bg-leaf/20 text-leaf rounded cursor-pointer hover:bg-leaf/30 transition-colors leading-tight"
+                          className="text-sm font-medium p-1 bg-leaf/20 text-leaf rounded cursor-pointer hover:bg-leaf/30 transition-colors mb-1 block"
                           title={entry.originalMessage}
                           onClick={() => window.location.href = `/growth#${entry.id}`}
                         >
-                          <div className="line-clamp-2 sm:line-clamp-1">
-                            {entry.originalMessage.length > 20 
-                              ? entry.originalMessage.slice(0, 20) + "..." 
+                          <div className="h-10 overflow-hidden leading-tight text-xs">
+                            {entry.originalMessage.length > 25 
+                              ? entry.originalMessage.slice(0, 25) + "..." 
                               : entry.originalMessage}
                           </div>
                         </div>
