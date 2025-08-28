@@ -153,10 +153,10 @@ export default function ChatScreen() {
         const entryId = data.entryId;
         const fullPath = `${targetPath}#${entryId}`;
         console.log('記録一覧に遷移:', fullPath);
-        console.log('setLocation 実行前');
-        setLocation(fullPath);
-        console.log('setLocation 実行後');
-      }, 2000);
+        console.log('強制遷移実行');
+        // より確実な遷移のためwindow.location.hrefを使用
+        window.location.href = fullPath;
+      }, 1500); // 遷移時間を短縮
     },
     onError: (error: any) => {
       console.error("Finalize error:", error);
