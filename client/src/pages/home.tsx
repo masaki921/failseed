@@ -220,11 +220,11 @@ export default function Home() {
     },
     onSuccess: () => {
       setConversationState('complete');
-      if (!isGuestMode) {
-        setTimeout(() => {
-          window.location.href = '/growth';
-        }, 500);
-      }
+      setTimeout(() => {
+        const targetPath = isGuestMode ? '/growth?guest=true' : '/growth';
+        console.log('ホームから記録一覧に遷移:', targetPath, 'ゲストモード:', isGuestMode);
+        window.location.href = targetPath;
+      }, 500);
     }
   });
 
