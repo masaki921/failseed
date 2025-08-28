@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -14,6 +15,8 @@ import { loginUserSchema, type LoginUser } from "@shared/schema";
 export default function Login() {
   const [, setLocation] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
+  const [saveEmail, setSaveEmail] = useState(false);
+  const [savePassword, setSavePassword] = useState(false);
   const { login, isLoginPending, loginError, isAuthenticated } = useAuth();
 
   const form = useForm<LoginUser>({
@@ -24,12 +27,46 @@ export default function Login() {
     },
   });
 
+  // ページ読み込み時に保存された情報を復元
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('failseed_saved_email');
+    const savedPassword = localStorage.getItem('failseed_saved_password');
+    const emailSaveFlag = localStorage.getItem('failseed_save_email') === 'true';
+    const passwordSaveFlag = localStorage.getItem('failseed_save_password') === 'true';
+
+    if (savedEmail && emailSaveFlag) {
+      form.setValue('email', savedEmail);
+      setSaveEmail(true);
+    }
+    if (savedPassword && passwordSaveFlag) {
+      form.setValue('password', savedPassword);
+      setSavePassword(true);
+    }
+  }, [form]);
+
   // Redirect if already authenticated
   if (isAuthenticated) {
     setLocation("/");
   }
 
   const onSubmit = (data: LoginUser) => {
+    // ログイン情報の保存処理
+    if (saveEmail) {
+      localStorage.setItem('failseed_saved_email', data.email);
+      localStorage.setItem('failseed_save_email', 'true');
+    } else {
+      localStorage.removeItem('failseed_saved_email');
+      localStorage.removeItem('failseed_save_email');
+    }
+
+    if (savePassword) {
+      localStorage.setItem('failseed_saved_password', data.password);
+      localStorage.setItem('failseed_save_password', 'true');
+    } else {
+      localStorage.removeItem('failseed_saved_password');
+      localStorage.removeItem('failseed_save_password');
+    }
+
     login(data, {
       onSuccess: () => {
         setLocation("/");
@@ -80,6 +117,20 @@ export default function Login() {
                         data-testid="input-email"
                       />
                     </FormControl>
+                    <div className="flex items-center space-x-2 mt-2">
+                      <Checkbox
+                        id="save-email"
+                        checked={saveEmail}
+                        onCheckedChange={(checked) => setSaveEmail(checked as boolean)}
+                        data-testid="checkbox-save-email"
+                      />
+                      <label
+                        htmlFor="save-email"
+                        className="text-sm text-ink/70 cursor-pointer"
+                      >
+                        メールアドレスを保存する
+                      </label>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -116,6 +167,20 @@ export default function Login() {
                         </Button>
                       </div>
                     </FormControl>
+                    <div className="flex items-center space-x-2 mt-2">
+                      <Checkbox
+                        id="save-password"
+                        checked={savePassword}
+                        onCheckedChange={(checked) => setSavePassword(checked as boolean)}
+                        data-testid="checkbox-save-password"
+                      />
+                      <label
+                        htmlFor="save-password"
+                        className="text-sm text-ink/70 cursor-pointer"
+                      >
+                        パスワードを保存する
+                      </label>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
