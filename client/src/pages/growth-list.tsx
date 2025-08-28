@@ -74,30 +74,31 @@ export default function GrowthList() {
   }, [isLoading, isAuthenticated, isGuestMode, setLocation]);
 
   // ゲストモードでセッションから記録を取得
-  useEffect(() => {
-    if (isGuestMode) {
-      fetch('/api/guest/entries')
-        .then(res => res.json())
-        .then(data => {
-          console.log('Fetched guest entries:', data);
-          setGuestEntries(data);
-        })
-        .catch(err => console.error('Failed to fetch guest entries:', err));
+  const fetchGuestEntries = async () => {
+    if (!isGuestMode) return;
+    
+    try {
+      console.log('ゲストエントリー取得開始');
+      const response = await fetch('/api/guest/entries');
+      const data = await response.json();
+      console.log('取得したゲストエントリー:', data.length, '件');
+      setGuestEntries(data);
+    } catch (err) {
+      console.error('ゲストエントリー取得エラー:', err);
     }
+  };
+
+  useEffect(() => {
+    fetchGuestEntries();
   }, [isGuestMode]);
 
   // URLハッシュで記録IDが指定されている場合は再取得（学び生成後のリダイレクト用）
   useEffect(() => {
     if (isGuestMode && window.location.hash) {
+      console.log('ハッシュ付きアクセス - ゲストエントリー再取得');
       // ハッシュがある場合は学び生成後の可能性があるので再取得
       setTimeout(() => {
-        fetch('/api/guest/entries')
-          .then(res => res.json())
-          .then(data => {
-            console.log('Refreshed guest entries:', data);
-            setGuestEntries(data);
-          })
-          .catch(err => console.error('Failed to refresh guest entries:', err));
+        fetchGuestEntries();
       }, 500); // 少し遅延させてセッション保存を待つ
     }
   }, [isGuestMode]);

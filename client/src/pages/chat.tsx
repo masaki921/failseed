@@ -45,10 +45,11 @@ export default function ChatScreen() {
   useEffect(() => {
     if (initialTextFromUrl && inputText === "") {
       setInputText(initialTextFromUrl);
-      // URLをクリーンアップ
-      window.history.replaceState(null, '', '/chat');
+      // URLをクリーンアップ（ゲストモードパラメータは保持）
+      const cleanUrl = isGuestMode ? '/chat?guest=true' : '/chat';
+      window.history.replaceState(null, '', cleanUrl);
     }
-  }, [initialTextFromUrl, inputText]);
+  }, [initialTextFromUrl, inputText, isGuestMode]);
 
   const startConversationMutation = useMutation({
     mutationFn: async (data: StartConversationInput) => {
@@ -145,10 +146,13 @@ export default function ChatScreen() {
       setConversationState('complete');
       
       // 2秒後に記録一覧ページに遷移
+      console.log('学び生成完了 - ゲストモード:', isGuestMode);
       setTimeout(() => {
         const targetPath = isGuestMode ? "/growth?guest=true" : "/growth";
         const entryId = data.entryId;
-        setLocation(`${targetPath}#${entryId}`);
+        const fullPath = `${targetPath}#${entryId}`;
+        console.log('記録一覧に遷移:', fullPath);
+        setLocation(fullPath);
       }, 2000);
     },
     onError: (error: any) => {
