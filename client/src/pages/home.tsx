@@ -223,7 +223,7 @@ export default function Home() {
       if (!isGuestMode) {
         setTimeout(() => {
           window.location.href = '/growth';
-        }, 2000);
+        }, 500);
       }
     }
   });

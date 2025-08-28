@@ -145,7 +145,7 @@ export default function ChatScreen() {
       
       setConversationState('complete');
       
-      // 2秒後に記録一覧ページに遷移
+      // 0.5秒後に記録一覧ページに遷移
       console.log('学び生成完了 - ゲストモード:', isGuestMode);
       console.log('遷移タイマー開始 - entryId:', data.entryId);
       setTimeout(() => {
@@ -156,7 +156,7 @@ export default function ChatScreen() {
         console.log('強制遷移実行');
         // より確実な遷移のためwindow.location.hrefを使用
         window.location.href = fullPath;
-      }, 1500); // 遷移時間を短縮
+      }, 500); // 遷移時間を最短に
     },
     onError: (error: any) => {
       console.error("Finalize error:", error);

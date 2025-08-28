@@ -99,7 +99,7 @@ export default function GrowthList() {
       // ハッシュがある場合は学び生成後の可能性があるので再取得
       setTimeout(() => {
         fetchGuestEntries();
-      }, 500); // 少し遅延させてセッション保存を待つ
+      }, 100); // 遅延を最短に
     }
   }, [isGuestMode]);
 
@@ -151,7 +151,7 @@ export default function GrowthList() {
           element.classList.add('ring-2', 'ring-leaf', 'ring-opacity-50');
           setTimeout(() => {
             element.classList.remove('ring-2', 'ring-leaf', 'ring-opacity-50');
-          }, 3000);
+          }, 1500);
         }
       }
     }
@@ -315,7 +315,7 @@ export default function GrowthList() {
                                 element.classList.add('ring-2', 'ring-leaf', 'ring-opacity-50');
                                 setTimeout(() => {
                                   element.classList.remove('ring-2', 'ring-leaf', 'ring-opacity-50');
-                                }, 3000);
+                                }, 1500);
                               }
                             }, 100);
                           }}
