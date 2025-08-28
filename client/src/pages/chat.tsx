@@ -147,12 +147,15 @@ export default function ChatScreen() {
       
       // 2秒後に記録一覧ページに遷移
       console.log('学び生成完了 - ゲストモード:', isGuestMode);
+      console.log('遷移タイマー開始 - entryId:', data.entryId);
       setTimeout(() => {
         const targetPath = isGuestMode ? "/growth?guest=true" : "/growth";
         const entryId = data.entryId;
         const fullPath = `${targetPath}#${entryId}`;
         console.log('記録一覧に遷移:', fullPath);
+        console.log('setLocation 実行前');
         setLocation(fullPath);
+        console.log('setLocation 実行後');
       }, 2000);
     },
     onError: (error: any) => {
