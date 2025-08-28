@@ -205,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Guest mode conversation start (temporary, not saved to database)
+  // Guest mode conversation start (database-backed for full functionality)
   app.post("/api/guest/conversation/start", async (req, res) => {
     try {
       const { text } = startConversationSchema.parse(req.body);
@@ -218,8 +218,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Check for dangerous content
-      if (detectDangerousContent(text)) {
+      // 危険性検出
+      const isDangerous = await detectDangerousContent(text);
+      if (isDangerous) {
         return res.status(400).json({
           error: "safety_concern",
           message: "心配な内容が含まれています。専門の相談窓口にご相談ください。",
@@ -230,37 +231,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Generate AI response for guest mode (no database save)
+      // セッションIDを使用してプライバシーを保護
+      const sessionId = req.sessionID;
+      
+      // データベースに記録を作成
+      const entry = await storage.createGuestConversation(text, sessionId);
+      
+      // Generate AI response
       const aiResponse = await generateConversationResponse("", text, 1);
+
+      // 対話履歴を更新
+      const conversationMessages = [
+        { role: 'user', content: text, timestamp: new Date().toISOString() },
+        { role: 'assistant', content: aiResponse.message, timestamp: new Date().toISOString() }
+      ];
       
-      // Create temporary session-based conversation ID
-      const tempEntryId = `guest-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      
-      // Store conversation in session for guest mode
-      if (!req.session.guestConversations) {
-        req.session.guestConversations = {};
-      }
-      
-      req.session.guestConversations[tempEntryId] = {
-        messages: [
-          {
-            role: 'user',
-            content: text,
-            timestamp: new Date().toISOString()
-          },
-          {
-            role: 'assistant',
-            content: aiResponse.message,
-            timestamp: new Date().toISOString()
-          }
-        ],
-        turnCount: 1
-      };
+      await storage.updateGuestConversationHistory(entry.id, conversationMessages as ConversationMessage[], 1);
 
       const response: AIConversationResponse = {
         message: aiResponse.message,
         shouldFinalize: aiResponse.shouldFinalize,
-        entryId: tempEntryId,
+        entryId: entry.id,
       };
 
       res.json(response);
@@ -420,52 +411,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Guest mode conversation finalize (show learning without saving)
+  // Guest mode conversation finalize (database-backed)
   app.post("/api/guest/conversation/finalize", async (req, res) => {
     try {
       const { entryId } = finalizeConversationSchema.parse(req.body);
 
-      // Get guest conversation from session
-      if (!req.session.guestConversations || !req.session.guestConversations[entryId]) {
+      // セッションIDでプライバシー保護
+      const sessionId = req.sessionID;
+      
+      // データベースからゲスト記録を取得
+      const entry = await storage.getGuestEntry(entryId, sessionId);
+      if (!entry) {
         return res.status(404).json({ 
           error: "not_found",
           message: "会話が見つかりません。"
         });
       }
 
-      const conversation = req.session.guestConversations[entryId];
-
-      // Build conversation history for AI
-      const conversationHistory = conversation.messages.map((msg: any) => 
-        `${msg.role === 'user' ? 'ユーザー' : 'FailSeed君'}: ${msg.content}`
-      ).join('\n\n');
-
-      // Generate learning insights
-      const aiResponse = await generateFinalizationResponse(conversationHistory);
-
-      // Save to guest entries for display in record list
-      if (!req.session.guestEntries) {
-        req.session.guestEntries = [];
+      // 対話履歴を構築
+      let conversationHistory = '';
+      if (entry.conversationHistory) {
+        const messages = JSON.parse(entry.conversationHistory) as ConversationMessage[];
+        conversationHistory = messages.map((msg: ConversationMessage) => 
+          `${msg.role === 'user' ? 'ユーザー' : 'FailSeed君'}: ${msg.content}`
+        ).join('\n\n');
+      } else {
+        // 初期テキストをベースに
+        conversationHistory = `ユーザー: ${entry.text}`;
       }
 
-      const originalText = conversation.messages.find((msg: any) => msg.role === 'user')?.content || '';
-      
-      const guestEntry = {
-        id: entryId,
-        text: originalText,
-        aiGrowth: aiResponse.growth,
-        aiHint: aiResponse.hint,
-        createdAt: new Date().toISOString(),
-        isCompleted: 1
-      };
-      
-      req.session.guestEntries.push(guestEntry);
-      
-      console.log('Saved guest entry:', guestEntry);
-      console.log('Total guest entries in session:', req.session.guestEntries.length);
+      // 学びのインサイトを生成
+      const aiResponse = await generateFinalizationResponse(conversationHistory);
 
-      // Clear the conversation from session (optional, for cleanup)
-      delete req.session.guestConversations[entryId];
+      // データベースで会話を完了状態にする
+      await storage.finalizeGuestConversation(entryId, aiResponse.growth, aiResponse.hint);
 
       const response: AIFinalizationResponse = {
         growth: aiResponse.growth,
@@ -483,11 +462,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get guest entries from session
+  // Get guest entries from database (session-based privacy)
   app.get("/api/guest/entries", async (req, res) => {
     try {
-      const guestEntries = req.session.guestEntries || [];
-      console.log('Fetching guest entries from session:', guestEntries.length, 'entries');
+      const sessionId = req.sessionID;
+      const guestEntries = await storage.getAllGuestEntries(sessionId);
+      console.log('Fetching guest entries from database:', guestEntries.length, 'entries');
       res.json(guestEntries);
     } catch (error) {
       console.error("Get guest entries error:", error);
