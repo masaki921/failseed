@@ -186,7 +186,7 @@ export default function CalendarView() {
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`aspect-square sm:h-[120px] p-2 border rounded-lg relative overflow-hidden ${
+                    className={`w-full h-20 sm:h-28 p-1 border rounded-lg relative overflow-hidden flex flex-col ${
                       isCurrentMonth
                         ? isDayToday
                           ? 'bg-leaf/10 border-leaf/30'
@@ -196,7 +196,7 @@ export default function CalendarView() {
                         : 'bg-gray-50 border-gray-200'
                     } ${dayEntries.length > 0 ? 'cursor-pointer' : ''}`}
                   >
-                    <div className={`text-xs sm:text-sm font-medium ${
+                    <div className={`text-sm font-bold mb-1 ${
                       isCurrentMonth
                         ? isDayToday
                           ? 'text-ink'
@@ -207,24 +207,22 @@ export default function CalendarView() {
                     </div>
 
                     {/* エントリ表示 */}
-                    <div className="mt-1 space-y-0.5 sm:space-y-1">
-                      {dayEntries.slice(0, 3).map((entry, index) => (
+                    <div className="flex-1 overflow-hidden">
+                      {dayEntries.slice(0, 2).map((entry, index) => (
                         <div
                           key={entry.id}
-                          className="text-sm font-medium p-1 bg-leaf/20 text-leaf rounded cursor-pointer hover:bg-leaf/30 transition-colors mb-1 block"
+                          className="text-xs p-0.5 mb-0.5 bg-leaf/30 text-leaf rounded cursor-pointer hover:bg-leaf/40 transition-colors leading-tight"
                           title={entry.originalMessage}
                           onClick={() => window.location.href = `/growth#${entry.id}`}
                         >
-                          <div className="h-10 overflow-hidden leading-tight text-xs">
-                            {entry.originalMessage.length > 25 
-                              ? entry.originalMessage.slice(0, 25) + "..." 
-                              : entry.originalMessage}
-                          </div>
+                          {entry.originalMessage.length > 18 
+                            ? entry.originalMessage.slice(0, 18) + "..." 
+                            : entry.originalMessage}
                         </div>
                       ))}
-                      {dayEntries.length > 3 && (
-                        <div className="text-xs text-ink/60 font-medium mt-0.5">
-                          +{dayEntries.length - 3}件
+                      {dayEntries.length > 2 && (
+                        <div className="text-xs text-ink/60 font-medium">
+                          +{dayEntries.length - 2}
                         </div>
                       )}
                     </div>
