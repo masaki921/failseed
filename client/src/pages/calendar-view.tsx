@@ -176,7 +176,7 @@ export default function CalendarView() {
             </div>
 
             {/* カレンダー日付 */}
-            <div className="grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-7 gap-1 sm:gap-2">
               {days.map((day) => {
                 const dateKey = formatDate(day, 'yyyy-MM-dd');
                 const dayEntries = entriesByDate[dateKey] || [];
@@ -186,7 +186,7 @@ export default function CalendarView() {
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`min-h-[120px] p-2 border rounded-lg relative ${
+                    className={`min-h-[80px] sm:min-h-[120px] p-1 sm:p-2 border rounded-lg relative ${
                       isCurrentMonth
                         ? isDayToday
                           ? 'bg-leaf/10 border-leaf/30'
@@ -196,7 +196,7 @@ export default function CalendarView() {
                         : 'bg-gray-50 border-gray-200'
                     } ${dayEntries.length > 0 ? 'cursor-pointer' : ''}`}
                   >
-                    <div className={`text-sm font-medium ${
+                    <div className={`text-xs sm:text-sm font-medium ${
                       isCurrentMonth
                         ? isDayToday
                           ? 'text-ink'
@@ -207,21 +207,23 @@ export default function CalendarView() {
                     </div>
 
                     {/* エントリ表示 */}
-                    <div className="mt-1 space-y-1">
+                    <div className="mt-1 space-y-0.5 sm:space-y-1">
                       {dayEntries.slice(0, 3).map((entry, index) => (
                         <div
                           key={entry.id}
-                          className="text-xs p-1 bg-leaf/20 text-leaf rounded truncate cursor-pointer hover:bg-leaf/30 transition-colors"
+                          className="text-xs sm:text-xs p-0.5 sm:p-1 bg-leaf/20 text-leaf rounded cursor-pointer hover:bg-leaf/30 transition-colors leading-tight"
                           title={entry.originalMessage}
                           onClick={() => window.location.href = `/growth#${entry.id}`}
                         >
-                          {entry.originalMessage.length > 12 
-                            ? entry.originalMessage.slice(0, 12) + "..." 
-                            : entry.originalMessage}
+                          <div className="line-clamp-2 sm:line-clamp-1">
+                            {entry.originalMessage.length > 20 
+                              ? entry.originalMessage.slice(0, 20) + "..." 
+                              : entry.originalMessage}
+                          </div>
                         </div>
                       ))}
                       {dayEntries.length > 3 && (
-                        <div className="text-xs text-ink/60 font-medium">
+                        <div className="text-xs text-ink/60 font-medium mt-0.5">
                           +{dayEntries.length - 3}件
                         </div>
                       )}
