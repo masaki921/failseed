@@ -269,7 +269,7 @@ export default function GrowthList() {
             </div>
 
             {/* カレンダー日付 */}
-            <div className="grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-7 gap-1 md:gap-2">
               {days.map((day) => {
                 const dateKey = formatDate(day, 'yyyy-MM-dd');
                 const dayEntries = entriesByDate[dateKey] || [];
@@ -279,7 +279,7 @@ export default function GrowthList() {
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`min-h-[80px] md:min-h-[120px] p-1 md:p-2 border rounded-lg relative ${
+                    className={`h-20 md:h-28 p-2 border rounded-lg relative overflow-hidden flex flex-col ${
                       isCurrentMonth
                         ? isDayToday
                           ? 'bg-leaf/10 border-leaf/30'
@@ -289,7 +289,7 @@ export default function GrowthList() {
                         : 'bg-gray-50 border-gray-200'
                     } ${dayEntries.length > 0 ? 'cursor-pointer' : ''}`}
                   >
-                    <div className={`text-sm font-medium ${
+                    <div className={`text-sm font-bold mb-1 ${
                       isCurrentMonth
                         ? isDayToday
                           ? 'text-ink'
@@ -300,11 +300,11 @@ export default function GrowthList() {
                     </div>
 
                     {/* エントリ表示 */}
-                    <div className="mt-1 space-y-1">
+                    <div className="flex-1 space-y-0.5 overflow-hidden">
                       {dayEntries.slice(0, 3).map((entry, index) => (
                         <div
                           key={entry.id}
-                          className="text-xs p-1 bg-leaf/20 text-leaf rounded truncate cursor-pointer hover:bg-leaf/30 transition-colors break-all"
+                          className="text-xs p-1 bg-leaf/30 text-leaf rounded cursor-pointer hover:bg-leaf/40 transition-colors leading-tight overflow-hidden"
                           title={entry.text}
                           onClick={() => {
                             setViewMode('list');
@@ -320,9 +320,11 @@ export default function GrowthList() {
                             }, 100);
                           }}
                         >
-                          {entry.text.length > 8
-                            ? entry.text.slice(0, 8) + "..."
-                            : entry.text}
+                          <div className="h-8 overflow-hidden text-xs leading-tight">
+                            {entry.text.length > 22
+                              ? entry.text.slice(0, 22) + "..."
+                              : entry.text}
+                          </div>
                         </div>
                       ))}
                       {dayEntries.length > 3 && (
