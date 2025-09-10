@@ -775,10 +775,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const invoice = subscription.latest_invoice as any;
       const paymentIntent = invoice?.payment_intent as any;
+      
+      console.log('Subscription created:', {
+        subscriptionId: subscription.id,
+        invoiceStatus: invoice?.status,
+        paymentIntentStatus: paymentIntent?.status,
+        clientSecret: paymentIntent?.client_secret ? 'Present' : 'Missing'
+      });
+
+      if (!paymentIntent?.client_secret) {
+        return res.status(400).json({ 
+          error: 'No client secret found in payment intent',
+          subscriptionId: subscription.id,
+          customerId: customer.id
+        });
+      }
 
       res.json({
         subscriptionId: subscription.id,
-        clientSecret: paymentIntent?.client_secret,
+        clientSecret: paymentIntent.client_secret,
         customerId: customer.id
       });
     } catch (error: any) {

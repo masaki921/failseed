@@ -101,12 +101,21 @@ export default function Subscription() {
         const subscriptionResponse = await apiRequest("POST", "/api/create-subscription-guest");
         const subscriptionData = await subscriptionResponse.json();
         
+        console.log('Subscription response:', subscriptionData);
+        
         if (subscriptionData.clientSecret) {
           setClientSecret(subscriptionData.clientSecret);
-        } else if (subscriptionData.message) {
+        } else if (subscriptionData.error) {
           toast({
-            title: "お知らせ",
-            description: subscriptionData.message,
+            title: "エラー",
+            description: subscriptionData.error,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "エラー",
+            description: "決済フォームの準備に問題があります。",
+            variant: "destructive",
           });
         }
       } catch (error) {
