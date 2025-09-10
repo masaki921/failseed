@@ -769,7 +769,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         customer: customer.id,
         items: [{ price: price.id }],
         payment_behavior: 'default_incomplete',
-        payment_settings: { save_default_payment_method: 'on_subscription' },
+        payment_settings: { 
+          save_default_payment_method: 'on_subscription',
+          payment_method_types: ['card']
+        },
         expand: ['latest_invoice.payment_intent'],
       });
 
@@ -778,16 +781,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('Subscription created:', {
         subscriptionId: subscription.id,
+        subscriptionStatus: subscription.status,
         invoiceStatus: invoice?.status,
         paymentIntentStatus: paymentIntent?.status,
+        paymentIntentId: paymentIntent?.id,
         clientSecret: paymentIntent?.client_secret ? 'Present' : 'Missing'
       });
+
+      // If no payment intent was created automatically, create one manually
+      if (!paymentIntent?.client_secret) {
+        const manualPaymentIntent = await stripe.paymentIntents.create({
+          amount: 98000, // 980円
+          currency: 'jpy',
+          customer: customer.id,
+          setup_future_usage: 'off_session',
+          metadata: {
+            subscription_id: subscription.id
+          }
+        });
+        
+        console.log('Manual payment intent created:', manualPaymentIntent.id);
+        
+        return res.json({
+          subscriptionId: subscription.id,
+          clientSecret: manualPaymentIntent.client_secret,
+          customerId: customer.id
+        });
+      }
 
       if (!paymentIntent?.client_secret) {
         return res.status(400).json({ 
           error: 'No client secret found in payment intent',
           subscriptionId: subscription.id,
-          customerId: customer.id
+          customerId: customer.id,
+          debug: {
+            subscriptionStatus: subscription.status,
+            invoiceStatus: invoice?.status,
+            paymentIntentStatus: paymentIntent?.status
+          }
         });
       }
 
