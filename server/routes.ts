@@ -1,6 +1,7 @@
 import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import Stripe from "stripe";
 
 // Session interface extension for TypeScript
 declare module 'express-session' {
@@ -67,6 +68,14 @@ const requireAuth = async (req: Request, res: any, next: any) => {
     });
   }
 };
+
+// Initialize Stripe
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2025-08-27.basil",
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -707,6 +716,145 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         error: "server_error",
         message: "成長記録の取得に失敗しました。"
+      });
+    }
+  });
+
+  // Stripe payment routes
+  app.post("/api/create-payment-intent", requireAuth, async (req, res) => {
+    try {
+      const { amount } = req.body;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: "jpy",
+        metadata: {
+          userId: req.session.userId!
+        }
+      });
+      res.json({ clientSecret: paymentIntent.client_secret });
+    } catch (error: any) {
+      console.error("Payment intent creation error:", error);
+      res.status(500).json({ 
+        error: "payment_error",
+        message: "決済の初期化に失敗しました。" 
+      });
+    }
+  });
+
+  // Create or get subscription
+  app.post('/api/create-subscription', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(404).json({ 
+          error: "user_not_found",
+          message: "ユーザーが見つかりません。" 
+        });
+      }
+
+      // Check if user already has a subscription
+      if (user.stripeSubscriptionId) {
+        const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+        
+        if (subscription.status === 'active') {
+          return res.json({
+            subscriptionId: subscription.id,
+            status: subscription.status,
+            message: "既にアクティブなサブスクリプションがあります。"
+          });
+        }
+      }
+
+      // Create Stripe customer if doesn't exist
+      let customerId = user.stripeCustomerId;
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          metadata: { userId: user.id }
+        });
+        customerId = customer.id;
+        await storage.updateUserStripeInfo(userId, { stripeCustomerId: customerId });
+      }
+
+      // Create subscription
+      const subscription = await stripe.subscriptions.create({
+        customer: customerId,
+        items: [{
+          price_data: {
+            currency: 'jpy',
+            product: {
+              name: 'FailSeed プレミアムプラン',
+              description: '無制限の成長記録と高度なAI分析機能'
+            },
+            unit_amount: 98000, // 980円/月
+            recurring: {
+              interval: 'month'
+            }
+          }
+        }],
+        payment_behavior: 'default_incomplete',
+        payment_settings: { save_default_payment_method: 'on_subscription' },
+        expand: ['latest_invoice.payment_intent'],
+      });
+
+      // Update user with subscription info
+      await storage.updateUserStripeInfo(userId, { 
+        stripeSubscriptionId: subscription.id,
+        subscriptionStatus: subscription.status 
+      });
+
+      const invoice = subscription.latest_invoice as any;
+      const paymentIntent = invoice?.payment_intent as any;
+
+      res.json({
+        subscriptionId: subscription.id,
+        clientSecret: paymentIntent.client_secret,
+        status: subscription.status
+      });
+    } catch (error: any) {
+      console.error("Subscription creation error:", error);
+      res.status(500).json({ 
+        error: "subscription_error",
+        message: "サブスクリプションの作成に失敗しました。" 
+      });
+    }
+  });
+
+  // Check subscription status
+  app.get('/api/subscription-status', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const user = await storage.getUserById(userId);
+      
+      if (!user || !user.stripeSubscriptionId) {
+        return res.json({ 
+          status: 'inactive',
+          hasSubscription: false 
+        });
+      }
+
+      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+      
+      // Update local status if different
+      if (subscription.status !== user.subscriptionStatus) {
+        await storage.updateUserStripeInfo(userId, { 
+          subscriptionStatus: subscription.status 
+        });
+      }
+
+      res.json({
+        status: subscription.status,
+        hasSubscription: true,
+        currentPeriodEnd: (subscription as any).current_period_end,
+        cancelAtPeriodEnd: subscription.cancel_at_period_end
+      });
+    } catch (error: any) {
+      console.error("Subscription status check error:", error);
+      res.status(500).json({ 
+        error: "subscription_error",
+        message: "サブスクリプション状態の確認に失敗しました。" 
       });
     }
   });
