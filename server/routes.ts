@@ -741,6 +741,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Stripe subscription creation for guests (no auth required)
+  app.post('/api/create-subscription-guest', async (req, res) => {
+    try {
+      // Create a temporary customer
+      const customer = await stripe.customers.create({
+        email: `guest-${Date.now()}@example.com`,
+        metadata: { guest: 'true' }
+      });
+
+      // Create subscription
+      const subscription = await stripe.subscriptions.create({
+        customer: customer.id,
+        items: [{
+          price_data: {
+            currency: 'jpy',
+            product_data: {
+              name: 'FailSeed プレミアムプラン',
+              description: '無制限の成長記録と高度なAI分析機能'
+            },
+            unit_amount: 98000, // 980円/月
+            recurring: {
+              interval: 'month'
+            }
+          } as any
+        }],
+        payment_behavior: 'default_incomplete',
+        payment_settings: { save_default_payment_method: 'on_subscription' },
+        expand: ['latest_invoice.payment_intent'],
+      });
+
+      const invoice = subscription.latest_invoice as any;
+      const paymentIntent = invoice?.payment_intent as any;
+
+      res.json({
+        subscriptionId: subscription.id,
+        clientSecret: paymentIntent?.client_secret,
+        customerId: customer.id
+      });
+    } catch (error: any) {
+      console.error('Subscription creation error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Create or get subscription
   app.post('/api/create-subscription', requireAuth, async (req, res) => {
     try {

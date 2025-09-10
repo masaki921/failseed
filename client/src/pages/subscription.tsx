@@ -82,17 +82,23 @@ export default function Subscription() {
     // まずサブスクリプション状態を確認
     const checkSubscriptionStatus = async () => {
       try {
-        const response = await apiRequest("GET", "/api/subscription-status");
-        const data = await response.json();
-        setSubscriptionStatus(data.status);
-        
-        if (data.status === 'active') {
-          setIsLoading(false);
-          return; // 既にアクティブなら決済フォームは表示しない
+        // 認証済みユーザーのみサブスクリプション状態を確認
+        try {
+          const response = await apiRequest("GET", "/api/subscription-status");
+          const data = await response.json();
+          setSubscriptionStatus(data.status);
+          
+          if (data.status === 'active') {
+            setIsLoading(false);
+            return; // 既にアクティブなら決済フォームは表示しない
+          }
+        } catch (authError) {
+          // 未認証ユーザーの場合はスキップ
+          console.log("User not authenticated, proceeding with subscription setup");
         }
         
-        // アクティブでない場合は新しいサブスクリプションを作成
-        const subscriptionResponse = await apiRequest("POST", "/api/create-subscription");
+        // 新しいサブスクリプションを作成（認証不要）
+        const subscriptionResponse = await apiRequest("POST", "/api/create-subscription-guest");
         const subscriptionData = await subscriptionResponse.json();
         
         if (subscriptionData.clientSecret) {
@@ -107,7 +113,7 @@ export default function Subscription() {
         console.error("Subscription check error:", error);
         toast({
           title: "エラー",
-          description: "サブスクリプション情報の取得に失敗しました。",
+          description: "決済フォームの準備に失敗しました。ページを再読み込みしてください。",
           variant: "destructive",
         });
       } finally {
@@ -170,17 +176,27 @@ export default function Subscription() {
     return (
       <div className="min-h-screen bg-sage flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-white border-leaf/20 shadow-lg rounded-3xl">
-          <CardContent className="p-6 text-center">
+          <CardContent className="p-6 text-center space-y-4">
             <Alert className="mb-4">
               <AlertDescription>
-                決済情報の準備に時間がかかっています。しばらくお待ちください。
+                決済フォームの準備中です。しばらくお待ちください。
               </AlertDescription>
             </Alert>
-            <Link href="/">
-              <Button variant="outline" className="text-leaf border-leaf/30 hover:bg-leaf/10 rounded-2xl">
-                ホームに戻る
+            <div className="w-12 h-12 border-4 border-leaf/20 border-t-leaf rounded-full animate-spin mx-auto"></div>
+            <div className="space-y-2">
+              <Button 
+                onClick={() => window.location.reload()} 
+                variant="outline" 
+                className="text-leaf border-leaf/30 hover:bg-leaf/10 rounded-2xl mr-2"
+              >
+                再読み込み
               </Button>
-            </Link>
+              <Link href="/">
+                <Button variant="outline" className="text-ink/60 border-ink/20 hover:bg-ink/10 rounded-2xl">
+                  ホームに戻る
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>
