@@ -216,11 +216,19 @@ export default function Subscription() {
     <div className="min-h-screen bg-sage flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-white border-leaf/20 shadow-lg rounded-3xl">
         <CardHeader className="text-center pb-6">
-          <Link href="/">
-            <div className="w-16 h-16 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center mx-auto mb-4 cursor-pointer">
-              <Sprout className="w-8 h-8 text-white" />
-            </div>
-          </Link>
+          <div className="flex justify-between items-start mb-4">
+            <Link href="/">
+              <Button variant="ghost" size="sm" className="text-ink/60 hover:bg-ink/10 rounded-xl">
+                ← 戻る
+              </Button>
+            </Link>
+            <Link href="/">
+              <div className="w-16 h-16 bg-gradient-to-br from-leaf to-soil rounded-full flex items-center justify-center cursor-pointer">
+                <Sprout className="w-8 h-8 text-white" />
+              </div>
+            </Link>
+            <div className="w-16"></div> {/* スペーサー */}
+          </div>
           <CardTitle className="text-2xl font-bold text-ink">プレミアムプラン</CardTitle>
           <p className="text-ink/70">月額980円でより深い成長体験を</p>
         </CardHeader>
@@ -244,10 +252,22 @@ export default function Subscription() {
             <SubscriptionForm />
           </Elements>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-3">
             <p className="text-xs text-ink/50">
               安全なStripe決済を利用しています
             </p>
+            <div className="flex gap-2 justify-center">
+              <Link href="/">
+                <Button variant="outline" size="sm" className="text-ink/60 border-ink/20 hover:bg-ink/10 rounded-xl">
+                  ホームに戻る
+                </Button>
+              </Link>
+              <Link href="/growth">
+                <Button variant="outline" size="sm" className="text-ink/60 border-ink/20 hover:bg-ink/10 rounded-xl">
+                  記録一覧
+                </Button>
+              </Link>
+            </div>
           </div>
         </CardContent>
       </Card>
