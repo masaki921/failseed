@@ -784,7 +784,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         items: [{
           price_data: {
             currency: 'jpy',
-            product: {
+            product_data: {
               name: 'FailSeed プレミアムプラン',
               description: '無制限の成長記録と高度なAI分析機能'
             },
@@ -792,7 +792,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             recurring: {
               interval: 'month'
             }
-          }
+          } as any
         }],
         payment_behavior: 'default_incomplete',
         payment_settings: { save_default_payment_method: 'on_subscription' },

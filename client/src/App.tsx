@@ -8,6 +8,7 @@ import GrowthList from "./pages/growth-list";
 import Onboarding from "./pages/onboarding";
 import Login from "./pages/login";
 import Register from "./pages/register";
+import Subscription from "./pages/subscription";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/onboarding" component={Onboarding} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
+      <Route path="/subscription" component={Subscription} />
       <Route component={NotFound} />
     </Switch>
   );
