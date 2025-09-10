@@ -750,22 +750,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         metadata: { guest: 'true' }
       });
 
-      // Create subscription
+      // Create a simple product
+      const product = await stripe.products.create({
+        name: 'FailSeed プレミアムプラン',
+        description: '無制限の成長記録と高度なAI分析機能'
+      });
+
+      // Create a price for the product
+      const price = await stripe.prices.create({
+        currency: 'jpy',
+        unit_amount: 98000, // 980円/月
+        recurring: { interval: 'month' },
+        product: product.id
+      });
+
+      // Create subscription with the price ID
       const subscription = await stripe.subscriptions.create({
         customer: customer.id,
-        items: [{
-          price_data: {
-            currency: 'jpy',
-            product_data: {
-              name: 'FailSeed プレミアムプラン',
-              description: '無制限の成長記録と高度なAI分析機能'
-            },
-            unit_amount: 98000, // 980円/月
-            recurring: {
-              interval: 'month'
-            }
-          } as any
-        }],
+        items: [{ price: price.id }],
         payment_behavior: 'default_incomplete',
         payment_settings: { save_default_payment_method: 'on_subscription' },
         expand: ['latest_invoice.payment_intent'],
@@ -822,22 +824,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateUserStripeInfo(userId, { stripeCustomerId: customerId });
       }
 
-      // Create subscription
+      // Create a simple product
+      const product = await stripe.products.create({
+        name: 'FailSeed プレミアムプラン',
+        description: '無制限の成長記録と高度なAI分析機能'
+      });
+
+      // Create a price for the product
+      const price = await stripe.prices.create({
+        currency: 'jpy',
+        unit_amount: 98000, // 980円/月
+        recurring: { interval: 'month' },
+        product: product.id
+      });
+
+      // Create subscription with the price ID
       const subscription = await stripe.subscriptions.create({
         customer: customerId,
-        items: [{
-          price_data: {
-            currency: 'jpy',
-            product_data: {
-              name: 'FailSeed プレミアムプラン',
-              description: '無制限の成長記録と高度なAI分析機能'
-            },
-            unit_amount: 98000, // 980円/月
-            recurring: {
-              interval: 'month'
-            }
-          } as any
-        }],
+        items: [{ price: price.id }],
         payment_behavior: 'default_incomplete',
         payment_settings: { save_default_payment_method: 'on_subscription' },
         expand: ['latest_invoice.payment_intent'],
