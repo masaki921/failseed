@@ -16,7 +16,6 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [saveEmail, setSaveEmail] = useState(false);
-  const [savePassword, setSavePassword] = useState(false);
   const { login, isLoginPending, loginError, isAuthenticated } = useAuth();
 
   const form = useForm<LoginUser>({
@@ -27,30 +26,26 @@ export default function Login() {
     },
   });
 
-  // ページ読み込み時に保存された情報を復元
+  // ページ読み込み時に保存されたメールアドレスを復元
   useEffect(() => {
     const savedEmail = localStorage.getItem('failseed_saved_email');
-    const savedPassword = localStorage.getItem('failseed_saved_password');
     const emailSaveFlag = localStorage.getItem('failseed_save_email') === 'true';
-    const passwordSaveFlag = localStorage.getItem('failseed_save_password') === 'true';
 
     if (savedEmail && emailSaveFlag) {
       form.setValue('email', savedEmail);
       setSaveEmail(true);
     }
-    if (savedPassword && passwordSaveFlag) {
-      form.setValue('password', savedPassword);
-      setSavePassword(true);
-    }
   }, [form]);
 
   // Redirect if already authenticated
-  if (isAuthenticated) {
-    setLocation("/");
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      setLocation("/");
+    }
+  }, [isAuthenticated, setLocation]);
 
   const onSubmit = (data: LoginUser) => {
-    // ログイン情報の保存処理
+    // メールアドレスのみ保存（セキュリティのためパスワードは保存しない）
     if (saveEmail) {
       localStorage.setItem('failseed_saved_email', data.email);
       localStorage.setItem('failseed_save_email', 'true');
@@ -59,13 +54,9 @@ export default function Login() {
       localStorage.removeItem('failseed_save_email');
     }
 
-    if (savePassword) {
-      localStorage.setItem('failseed_saved_password', data.password);
-      localStorage.setItem('failseed_save_password', 'true');
-    } else {
-      localStorage.removeItem('failseed_saved_password');
-      localStorage.removeItem('failseed_save_password');
-    }
+    // セキュリティのためパスワード関連の古いデータを削除
+    localStorage.removeItem('failseed_saved_password');
+    localStorage.removeItem('failseed_save_password');
 
     login(data, {
       onSuccess: () => {
@@ -167,20 +158,6 @@ export default function Login() {
                         </Button>
                       </div>
                     </FormControl>
-                    <div className="flex items-center space-x-2 mt-2">
-                      <Checkbox
-                        id="save-password"
-                        checked={savePassword}
-                        onCheckedChange={(checked) => setSavePassword(checked as boolean)}
-                        data-testid="checkbox-save-password"
-                      />
-                      <label
-                        htmlFor="save-password"
-                        className="text-sm text-ink/70 cursor-pointer"
-                      >
-                        パスワードを保存する
-                      </label>
-                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
