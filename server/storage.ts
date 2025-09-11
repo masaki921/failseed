@@ -1,4 +1,4 @@
-import { type Entry, type InsertEntry, type UpdateHint, type ConversationMessage, type User, type InsertUser, type LoginUser, entries, users } from "@shared/schema";
+import { type Entry, type InsertEntry, type UpdateHint, type UpdateCategory, type ConversationMessage, type User, type InsertUser, type LoginUser, entries, users } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, ne } from "drizzle-orm";
 import bcrypt from "bcrypt";
@@ -10,6 +10,7 @@ export interface IStorage {
   updateConversationHistory(id: string, messages: ConversationMessage[], conversationTurn?: number): Promise<Entry>;
   finalizeConversation(id: string, growth: string, hint?: string): Promise<Entry>;
   updateHintStatus(id: string, hintStatus: UpdateHint["hintStatus"]): Promise<Entry | undefined>;
+  updateEntryCategory(id: string, userId: string, category: UpdateCategory["category"]): Promise<Entry | undefined>;
   deleteEntry(id: string, userId: string): Promise<boolean>;
   getAllCompletedEntries(userId: string): Promise<Entry[]>;
   
@@ -97,6 +98,16 @@ export class DatabaseStorage implements IStorage {
       .update(entries)
       .set({ hintStatus })
       .where(eq(entries.id, id))
+      .returning();
+    
+    return entry || undefined;
+  }
+
+  async updateEntryCategory(id: string, userId: string, category: UpdateCategory["category"]): Promise<Entry | undefined> {
+    const [entry] = await db
+      .update(entries)
+      .set({ category })
+      .where(and(eq(entries.id, id), eq(entries.userId, userId)))
       .returning();
     
     return entry || undefined;

@@ -23,6 +23,7 @@ import {
   continueConversationSchema, 
   finalizeConversationSchema,
   updateHintSchema,
+  updateCategorySchema,
   registerUserSchema,
   loginUserSchema,
   type AIConversationResponse, 
@@ -730,6 +731,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         error: "server_error",
         message: "ヒントステータスの更新に失敗しました。"
+      });
+    }
+  });
+
+  // Update entry category
+  app.patch("/api/entry/:id/category", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { category } = updateCategorySchema.parse(req.body);
+      const userId = req.session.userId!;
+
+      const updatedEntry = await storage.updateEntryCategory(id, userId, category);
+      if (!updatedEntry) {
+        return res.status(404).json({ 
+          error: "not_found",
+          message: "エントリが見つからないか、更新権限がありません。"
+        });
+      }
+
+      res.json(updatedEntry);
+    } catch (error: any) {
+      console.error("Update category error:", error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({
+          error: "validation_error",
+          message: "カテゴリーの選択が無効です。",
+          details: error.errors
+        });
+      }
+      res.status(500).json({ 
+        error: "server_error",
+        message: "カテゴリーの更新に失敗しました。"
       });
     }
   });
