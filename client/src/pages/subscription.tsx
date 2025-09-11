@@ -17,7 +17,7 @@ if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
 }
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
-const SubscriptionForm = ({ selectedPlan }: { selectedPlan: 'monthly' | 'yearly' | null }) => {
+const SubscriptionForm = ({ selectedPlan }: { selectedPlan: 'monthly' | 'yearly' }) => {
   const stripe = useStripe();
   const elements = useElements();
   const { toast } = useToast();
@@ -28,7 +28,7 @@ const SubscriptionForm = ({ selectedPlan }: { selectedPlan: 'monthly' | 'yearly'
     yearly: { price: '4,500円', period: '年額', text: 'プラスプランに登録（年額）' }
   };
   
-  const currentPlan = selectedPlan ? planDetails[selectedPlan] : planDetails.monthly;
+  const currentPlan = planDetails[selectedPlan] || planDetails.monthly;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,8 +80,8 @@ const SubscriptionForm = ({ selectedPlan }: { selectedPlan: 'monthly' | 'yearly'
 export default function Subscription() {
   const [clientSecret, setClientSecret] = useState("");
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly' | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
   const { toast } = useToast();
 
   // URLパラメータで成功状態を確認
@@ -89,32 +89,27 @@ export default function Subscription() {
   const isSuccess = urlParams.get('success') === 'true';
 
   useEffect(() => {
-    // サブスクリプション状態の確認のみ
+    // まずサブスクリプション状態を確認
     const checkSubscriptionStatus = async () => {
       try {
-        const response = await apiRequest("GET", "/api/subscription-status");
-        const data = await response.json();
-        setSubscriptionStatus(data.status);
-      } catch (error) {
-        console.log("User not authenticated, continuing with subscription setup");
-        setSubscriptionStatus('inactive');
-      }
-    };
-
-    checkSubscriptionStatus();
-  }, []);
-
-  // プラン変更時のclientSecret作成
-  const handlePlanChange = async (newPlan: 'monthly' | 'yearly') => {
-    if (newPlan !== selectedPlan) {
-      setSelectedPlan(newPlan);
-      setClientSecret(""); // clientSecretをクリア
-      setIsLoading(true);
-
-      try {
-        // 新しいサブスクリプションを作成
+        // 認証済みユーザーのみサブスクリプション状態を確認
+        try {
+          const response = await apiRequest("GET", "/api/subscription-status");
+          const data = await response.json();
+          setSubscriptionStatus(data.status);
+          
+          if (data.status === 'active') {
+            setIsLoading(false);
+            return; // 既にアクティブなら決済フォームは表示しない
+          }
+        } catch (authError) {
+          // 未認証ユーザーの場合はスキップ
+          console.log("User not authenticated, proceeding with subscription setup");
+        }
+        
+        // 新しいサブスクリプションを作成（認証不要）
         const subscriptionResponse = await apiRequest("POST", "/api/create-subscription-guest", {
-          plan: newPlan
+          plan: selectedPlan
         });
         const subscriptionData = await subscriptionResponse.json();
         
@@ -136,16 +131,25 @@ export default function Subscription() {
           });
         }
       } catch (error) {
-        console.error("Subscription creation error:", error);
+        console.error("Subscription check error:", error);
         toast({
           title: "エラー",
-          description: "決済フォームの準備に失敗しました。",
+          description: "決済フォームの準備に失敗しました。ページを再読み込みしてください。",
           variant: "destructive",
         });
       } finally {
         setIsLoading(false);
       }
-    }
+    };
+
+    checkSubscriptionStatus();
+  }, [selectedPlan, toast]);
+
+  // プラン変更時のclientSecret再取得
+  const handlePlanChange = (newPlan: 'monthly' | 'yearly') => {
+    setSelectedPlan(newPlan);
+    setClientSecret(""); // clientSecretをクリアして再取得トリガー
+    setIsLoading(true);
   };
 
   // 成功画面
@@ -195,6 +199,37 @@ export default function Subscription() {
     );
   }
 
+  // 決済フォーム画面
+  if (!clientSecret) {
+    return (
+      <div className="min-h-screen bg-sage flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-white border-leaf/20 shadow-lg rounded-3xl">
+          <CardContent className="p-6 text-center space-y-4">
+            <Alert className="mb-4">
+              <AlertDescription>
+                決済フォームの準備中です。しばらくお待ちください。
+              </AlertDescription>
+            </Alert>
+            <div className="w-12 h-12 border-4 border-leaf/20 border-t-leaf rounded-full animate-spin mx-auto"></div>
+            <div className="space-y-2">
+              <Button 
+                onClick={() => window.location.reload()} 
+                variant="outline" 
+                className="text-leaf border-leaf/30 hover:bg-leaf/10 rounded-2xl mr-2"
+              >
+                再読み込み
+              </Button>
+              <Link href="/">
+                <Button variant="outline" className="text-ink/60 border-ink/20 hover:bg-ink/10 rounded-2xl">
+                  ホームに戻る
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-sage flex items-center justify-center p-4">
@@ -235,7 +270,7 @@ export default function Subscription() {
           {/* プラン選択UI */}
           <div className="mb-6">
             <h3 className="font-semibold text-ink mb-4">プランを選択</h3>
-            <RadioGroup value={selectedPlan || ""} onValueChange={handlePlanChange}>
+            <RadioGroup value={selectedPlan} onValueChange={handlePlanChange}>
               <div className="space-y-3">
                 <div className="flex items-center space-x-3 p-4 border border-leaf/20 rounded-2xl hover:bg-leaf/5 transition-colors">
                   <RadioGroupItem value="monthly" id="monthly" />
@@ -276,30 +311,11 @@ export default function Subscription() {
             </RadioGroup>
           </div>
 
-          {/* カード入力フォーム */}
-          <div className="mt-6">
-            {isLoading ? (
-              <div className="bg-leaf/10 border border-leaf/20 rounded-2xl p-6 text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-leaf mx-auto mb-3"></div>
-                <p className="text-ink/70">決済フォームを準備中...</p>
-              </div>
-            ) : clientSecret ? (
-              <div className="bg-white border border-leaf/20 rounded-2xl p-6">
-                <h3 className="font-semibold text-ink mb-4 flex items-center">
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  カード情報を入力
-                </h3>
-                <Elements stripe={stripePromise} options={{ clientSecret }} key={clientSecret}>
-                  <SubscriptionForm selectedPlan={selectedPlan} />
-                </Elements>
-              </div>
-            ) : (
-              <div className="bg-sage/10 border border-sage/20 rounded-2xl p-6 text-center">
-                <CreditCard className="w-8 h-8 text-sage mx-auto mb-3" />
-                <p className="text-ink/70">上記からプランを選択してください</p>
-              </div>
-            )}
-          </div>
+          {clientSecret && (
+            <Elements stripe={stripePromise} options={{ clientSecret }} key={clientSecret}>
+              <SubscriptionForm selectedPlan={selectedPlan} />
+            </Elements>
+          )}
 
           <div className="mt-6 text-center space-y-3">
             <p className="text-xs text-ink/50">
