@@ -8,6 +8,8 @@ import { Sprout, CreditCard, Check } from 'lucide-react';
 import { Link } from 'wouter';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 // Stripe公開キーの確認
 if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
@@ -15,11 +17,18 @@ if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
 }
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
-const SubscriptionForm = () => {
+const SubscriptionForm = ({ selectedPlan }: { selectedPlan: 'monthly' | 'yearly' }) => {
   const stripe = useStripe();
   const elements = useElements();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  const planDetails = {
+    monthly: { price: '480円', period: '月額', text: 'プラスプランに登録' },
+    yearly: { price: '4,500円', period: '年額', text: 'プラスプランに登録（年額）' }
+  };
+  
+  const currentPlan = planDetails[selectedPlan] || planDetails.monthly;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +71,7 @@ const SubscriptionForm = () => {
         className="w-full bg-leaf text-white hover:bg-leaf/90 rounded-2xl py-3"
         data-testid="button-subscribe"
       >
-        {isProcessing ? "処理中..." : "月額480円でプラスプランに登録"}
+        {isProcessing ? "処理中..." : `${currentPlan.period}${currentPlan.price}で${currentPlan.text}`}
       </Button>
     </form>
   );
@@ -72,6 +81,7 @@ export default function Subscription() {
   const [clientSecret, setClientSecret] = useState("");
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
   const { toast } = useToast();
 
   // URLパラメータで成功状態を確認
@@ -98,7 +108,9 @@ export default function Subscription() {
         }
         
         // 新しいサブスクリプションを作成（認証不要）
-        const subscriptionResponse = await apiRequest("POST", "/api/create-subscription-guest");
+        const subscriptionResponse = await apiRequest("POST", "/api/create-subscription-guest", {
+          plan: selectedPlan
+        });
         const subscriptionData = await subscriptionResponse.json();
         
         console.log('Subscription response:', subscriptionData);
@@ -131,7 +143,14 @@ export default function Subscription() {
     };
 
     checkSubscriptionStatus();
-  }, [toast]);
+  }, [selectedPlan, toast]);
+
+  // プラン変更時のclientSecret再取得
+  const handlePlanChange = (newPlan: 'monthly' | 'yearly') => {
+    setSelectedPlan(newPlan);
+    setClientSecret(""); // clientSecretをクリアして再取得トリガー
+    setIsLoading(true);
+  };
 
   // 成功画面
   if (isSuccess || subscriptionStatus === 'active') {
@@ -248,9 +267,55 @@ export default function Subscription() {
             </div>
           </div>
 
-          <Elements stripe={stripePromise} options={{ clientSecret }}>
-            <SubscriptionForm />
-          </Elements>
+          {/* プラン選択UI */}
+          <div className="mb-6">
+            <h3 className="font-semibold text-ink mb-4">プランを選択</h3>
+            <RadioGroup value={selectedPlan} onValueChange={handlePlanChange}>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3 p-4 border border-leaf/20 rounded-2xl hover:bg-leaf/5 transition-colors">
+                  <RadioGroupItem value="monthly" id="monthly" />
+                  <Label htmlFor="monthly" className="flex-1 cursor-pointer">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="font-medium text-ink">月額プラン</div>
+                        <div className="text-sm text-ink/70">毎月480円でお支払い</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-leaf">480円</div>
+                        <div className="text-xs text-ink/70">/ 月</div>
+                      </div>
+                    </div>
+                  </Label>
+                </div>
+                
+                <div className="flex items-center space-x-3 p-4 border border-leaf/20 rounded-2xl hover:bg-leaf/5 transition-colors">
+                  <RadioGroupItem value="yearly" id="yearly" />
+                  <Label htmlFor="yearly" className="flex-1 cursor-pointer">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="font-medium text-ink">年額プラン</div>
+                        <div className="text-sm text-ink/70">年間一括払い</div>
+                        <div className="text-xs text-leaf font-medium mt-1">
+                          月額プランより約22%お得 🎉
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-leaf">4,500円</div>
+                        <div className="text-xs text-ink/70">/ 年</div>
+                        <div className="text-xs text-ink/50 line-through">5,760円</div>
+                      </div>
+                    </div>
+                  </Label>
+                </div>
+              </div>
+            </RadioGroup>
+          </div>
+
+          {clientSecret && (
+            <Elements stripe={stripePromise} options={{ clientSecret }} key={clientSecret}>
+              <SubscriptionForm selectedPlan={selectedPlan} />
+            </Elements>
+          )}
 
           <div className="mt-6 text-center space-y-3">
             <p className="text-xs text-ink/50">

@@ -36,6 +36,30 @@ import {
   type ConversationMessage,
   type User 
 } from "@shared/schema";
+import { z } from "zod";
+
+// プラン設定
+const PLAN_CATALOG = {
+  monthly: {
+    amount: 480, // 480円
+    currency: 'jpy',
+    interval: 'month' as const,
+    interval_count: 1
+  },
+  yearly: {
+    amount: 4500, // 4500円
+    currency: 'jpy', 
+    interval: 'year' as const,
+    interval_count: 1
+  }
+} as const;
+
+type PlanType = keyof typeof PLAN_CATALOG;
+
+// プラン選択のZodスキーマ
+const createSubscriptionSchema = z.object({
+  plan: z.enum(['monthly', 'yearly'])
+});
 
 // Authentication middleware
 const requireAuth = async (req: Request, res: any, next: any) => {
@@ -744,23 +768,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Stripe subscription creation for guests (no auth required)
   app.post('/api/create-subscription-guest', async (req, res) => {
     try {
+      // バリデーション
+      const validatedData = createSubscriptionSchema.safeParse(req.body);
+      if (!validatedData.success) {
+        return res.status(400).json({
+          error: 'invalid_plan',
+          message: 'プランは monthly または yearly を選択してください。'
+        });
+      }
+
+      const { plan } = validatedData.data;
+      const planConfig = PLAN_CATALOG[plan];
+
       // Create a temporary customer
       const customer = await stripe.customers.create({
         email: `guest-${Date.now()}@example.com`,
-        metadata: { guest: 'true' }
+        metadata: { guest: 'true', plan }
       });
 
       // Create a simple product
       const product = await stripe.products.create({
         name: 'FailSeed プラスプラン',
-        description: '無制限の成長記録と高度なAI分析機能'
+        description: `無制限の成長記録と高度なAI分析機能（${plan === 'yearly' ? '年額' : '月額'}プラン）`
       });
 
-      // Create a price for the product
+      // Create a price for the selected plan
       const price = await stripe.prices.create({
-        currency: 'jpy',
-        unit_amount: 480, // 480円/月
-        recurring: { interval: 'month' },
+        currency: planConfig.currency,
+        unit_amount: planConfig.amount,
+        recurring: { interval: planConfig.interval },
         product: product.id
       });
 
@@ -791,21 +827,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If no payment intent was created automatically, create one manually
       if (!paymentIntent?.client_secret) {
         const manualPaymentIntent = await stripe.paymentIntents.create({
-          amount: 480, // 480円
-          currency: 'jpy',
+          amount: planConfig.amount, // 選択されたプランの価格
+          currency: planConfig.currency,
           customer: customer.id,
           setup_future_usage: 'off_session',
           metadata: {
-            subscription_id: subscription.id
+            subscription_id: subscription.id,
+            plan: plan
           }
         });
         
-        console.log('Manual payment intent created:', manualPaymentIntent.id);
+        console.log('Manual payment intent created:', manualPaymentIntent.id, 'for plan:', plan);
         
         return res.json({
           subscriptionId: subscription.id,
           clientSecret: manualPaymentIntent.client_secret,
-          customerId: customer.id
+          customerId: customer.id,
+          plan: plan
         });
       }
 
@@ -825,7 +863,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         subscriptionId: subscription.id,
         clientSecret: paymentIntent.client_secret,
-        customerId: customer.id
+        customerId: customer.id,
+        plan: plan
       });
     } catch (error: any) {
       console.error('Subscription creation error:', error);
