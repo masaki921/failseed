@@ -17,7 +17,7 @@ if (isProduction) {
 
 // セキュリティミドルウェア
 app.use(helmet({
-  contentSecurityPolicy: false, // Vite開発サーバー対応
+  contentSecurityPolicy: isProduction ? true : false, // 本番環境でCSP有効
   crossOriginEmbedderPolicy: false,
 }));
 
@@ -28,7 +28,7 @@ app.use(cors({
     ["http://localhost:3000", "http://localhost:5000"],
   credentials: true,
   methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
 
 // レート制限
@@ -47,6 +47,25 @@ app.use(limiter);
 // ボディサイズ制限
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// CSRF保護：カスタムヘッダーが必要
+app.use('/api', (req, res, next) => {
+  // GET, HEAD, OPTIONSは安全なので除外
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+    return next();
+  }
+  
+  // 状態変更のリクエストにはカスタムヘッダーを要求
+  const customHeader = req.headers['x-requested-with'];
+  if (customHeader !== 'FailSeed') {
+    return res.status(403).json({
+      error: 'csrf_protection',
+      message: 'リクエストが拒否されました。'
+    });
+  }
+  
+  next();
+});
 
 // セッション設定 - 永続化とセキュリティ強化
 if (!process.env.SESSION_SECRET && isProduction) {
@@ -70,7 +89,7 @@ app.use(session({
   cookie: {
     secure: isProduction, // デプロイ環境ではHTTPS必須
     maxAge: 1000 * 60 * 60 * 24 * 30, // 30日
-    sameSite: isProduction ? 'none' : 'lax', // クロスサイト対応
+    sameSite: 'lax', // セキュリティ強化：同一サイトに制限
     httpOnly: true, // XSS攻撃対策
   },
   name: 'failseed.sid', // セッション名を明示的に設定

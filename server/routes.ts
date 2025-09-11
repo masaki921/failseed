@@ -246,7 +246,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.clearCookie('failseed.sid', {
           httpOnly: true,
           secure: isProduction,
-          sameSite: isProduction ? 'none' : 'lax'
+          sameSite: 'lax'
         });
         
         res.json({ message: "ログアウトしました。" });
@@ -708,7 +708,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update hint status
-  app.patch("/api/entry/:id/hint", async (req, res) => {
+  app.patch("/api/entry/:id/hint", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const { hintStatus } = updateHintSchema.parse(req.body);
