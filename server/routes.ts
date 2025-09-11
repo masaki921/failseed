@@ -7,12 +7,6 @@ import Stripe from "stripe";
 declare module 'express-session' {
   export interface SessionData {
     userId?: string;
-    guestConversations?: {
-      [entryId: string]: {
-        messages: ConversationMessage[];
-        turnCount: number;
-      };
-    };
     guestEntries?: {
       id: string;
       text: string;
@@ -447,27 +441,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Get guest conversation from session
-      if (!req.session.guestConversations || !req.session.guestConversations[entryId]) {
+      // Get guest conversation from database by sessionId
+      const sessionId = req.sessionID;
+      const entry = await storage.getGuestEntry(entryId, sessionId);
+      if (!entry) {
         return res.status(404).json({ 
           error: "not_found",
           message: "会話が見つかりません。"
         });
       }
 
-      const conversation = req.session.guestConversations[entryId];
-      const turnCount = conversation.turnCount + 1;
+      // Parse existing conversation history
+      const existingMessages: ConversationMessage[] = entry.conversationHistory 
+        ? JSON.parse(entry.conversationHistory) 
+        : [];
+
+      // Calculate turn count from user messages
+      const turnCount = existingMessages.filter(msg => msg.role === 'user').length + 1;
 
       // Build conversation history for AI context
-      const conversationHistory = conversation.messages.map((msg: any) => 
-        `${msg.role === 'user' ? 'ユーザー' : 'FailSeed君'}: ${msg.content}`
-      ).join('\n\n');
+      const conversationHistory = existingMessages
+        .map(msg => `${msg.role}: ${msg.content}`)
+        .join('\n');
 
       // Generate AI response
       const aiResponse = await generateConversationResponse(conversationHistory, message, turnCount);
 
-      // Add new messages to conversation
-      conversation.messages.push(
+      // Update conversation history with new messages
+      const updatedMessages: ConversationMessage[] = [
+        ...existingMessages,
         {
           role: 'user',
           content: message,
@@ -478,8 +480,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           content: aiResponse.message,
           timestamp: new Date().toISOString()
         }
-      );
-      conversation.turnCount = turnCount;
+      ];
+
+      await storage.updateGuestConversationHistory(entryId, updatedMessages, turnCount);
 
       const response: AIConversationResponse = {
         message: aiResponse.message,
