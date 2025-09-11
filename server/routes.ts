@@ -752,14 +752,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create a simple product
       const product = await stripe.products.create({
-        name: 'FailSeed プレミアムプラン',
+        name: 'FailSeed プラスプラン',
         description: '無制限の成長記録と高度なAI分析機能'
       });
 
       // Create a price for the product
       const price = await stripe.prices.create({
         currency: 'jpy',
-        unit_amount: 98000, // 980円/月
+        unit_amount: 480, // 480円/月
         recurring: { interval: 'month' },
         product: product.id
       });
@@ -791,7 +791,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If no payment intent was created automatically, create one manually
       if (!paymentIntent?.client_secret) {
         const manualPaymentIntent = await stripe.paymentIntents.create({
-          amount: 98000, // 980円
+          amount: 480, // 480円
           currency: 'jpy',
           customer: customer.id,
           setup_future_usage: 'off_session',
@@ -872,14 +872,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create a simple product
       const product = await stripe.products.create({
-        name: 'FailSeed プレミアムプラン',
+        name: 'FailSeed プラスプラン',
         description: '無制限の成長記録と高度なAI分析機能'
       });
 
       // Create a price for the product
       const price = await stripe.prices.create({
         currency: 'jpy',
-        unit_amount: 98000, // 980円/月
+        unit_amount: 480, // 480円/月
         recurring: { interval: 'month' },
         product: product.id
       });

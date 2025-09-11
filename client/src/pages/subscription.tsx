@@ -46,7 +46,7 @@ const SubscriptionForm = () => {
     } else {
       toast({
         title: "決済が完了しました",
-        description: "プレミアムプランへようこそ！",
+        description: "プラスプランへようこそ！",
       });
     }
 
@@ -62,7 +62,7 @@ const SubscriptionForm = () => {
         className="w-full bg-leaf text-white hover:bg-leaf/90 rounded-2xl py-3"
         data-testid="button-subscribe"
       >
-        {isProcessing ? "処理中..." : "月額980円でプレミアムプランに登録"}
+        {isProcessing ? "処理中..." : "月額480円でプラスプランに登録"}
       </Button>
     </form>
   );
@@ -146,10 +146,10 @@ export default function Subscription() {
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <p className="text-ink/70">
-              FailSeedプレミアムプランへの登録が完了しました！
+              FailSeedプラスプランへの登録が完了しました！
             </p>
             <div className="bg-leaf/10 p-4 rounded-2xl">
-              <h3 className="font-semibold text-leaf mb-2">プレミアム特典</h3>
+              <h3 className="font-semibold text-leaf mb-2">プラス特典</h3>
               <ul className="text-sm text-ink/70 space-y-1">
                 <li>• 無制限の成長記録保存</li>
                 <li>• 高度なAI分析機能</li>
