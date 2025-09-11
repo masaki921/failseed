@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { apiRequest } from "@/lib/queryClient";
 import { type Entry, type UpdateHint } from "@shared/schema";
 import GrowthEntry from "../components/growth-entry";
-import { Sprout, MessageCircle, List, Calendar, ChevronLeft, ChevronRight, LogOut, Crown } from "lucide-react";
+import { Sprout, MessageCircle, List, Calendar, ChevronLeft, ChevronRight, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 // Simple date utilities
@@ -388,9 +388,8 @@ export default function GrowthList() {
                   size="sm"
                   data-testid="button-upgrade-nav-growth"
                 >
-                  <Crown className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  <span className="mr-1 text-xs sm:text-sm">✨</span>
                   <span className="hidden sm:inline">プラス</span>
-                  <span className="sm:hidden">👑</span>
                 </Button>
               </Link>
             )}

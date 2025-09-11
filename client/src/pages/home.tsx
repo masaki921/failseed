@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Calendar, Lightbulb, Target, Sprout, LogOut, Crown, Star } from "lucide-react";
+import { MessageCircle, Calendar, Lightbulb, Target, Sprout, LogOut, Star } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
@@ -397,9 +397,8 @@ export default function Home() {
                     size="sm"
                     data-testid="button-upgrade-nav"
                   >
-                    <Crown className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                    <span className="mr-1 text-xs sm:text-sm">✨</span>
                     <span className="hidden sm:inline">プラス</span>
-                    <span className="sm:hidden">👑</span>
                   </Button>
                 </Link>
               )}
