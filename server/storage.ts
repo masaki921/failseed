@@ -2,6 +2,7 @@ import { type Entry, type InsertEntry, type UpdateHint, type UpdateCategory, typ
 import { db } from "./db";
 import { eq, and, ne } from "drizzle-orm";
 import bcrypt from "bcrypt";
+import { categorizeEntry } from "./ai-service";
 
 export interface IStorage {
   // Entry operations
@@ -76,11 +77,34 @@ export class DatabaseStorage implements IStorage {
   }
 
   async finalizeConversation(id: string, growth: string, hint?: string): Promise<Entry> {
+    // First, get the current entry to access the original text for categorization
+    const [currentEntry] = await db.select().from(entries).where(eq(entries.id, id));
+    
+    if (!currentEntry) {
+      throw new Error("Entry not found");
+    }
+
+    // Use AI to automatically categorize the entry
+    let category = currentEntry.category || "その他";
+    try {
+      const categorizationResult = await categorizeEntry(
+        currentEntry.text,
+        growth,
+        hint
+      );
+      category = categorizationResult.category;
+      console.log(`AI categorized entry ${id} as: ${category} (confidence: ${categorizationResult.confidence})`);
+    } catch (error) {
+      console.warn(`AI categorization failed for entry ${id}:`, error);
+      // Keep existing category or default
+    }
+
     const [entry] = await db
       .update(entries)
       .set({
         aiGrowth: growth,
         aiHint: hint || null,
+        category: category,
         isCompleted: 1,
       })
       .where(eq(entries.id, id))
@@ -179,11 +203,34 @@ export class DatabaseStorage implements IStorage {
   }
 
   async finalizeGuestConversation(id: string, growth: string, hint?: string): Promise<Entry> {
+    // First, get the current entry to access the original text for categorization
+    const [currentEntry] = await db.select().from(entries).where(eq(entries.id, id));
+    
+    if (!currentEntry) {
+      throw new Error("Guest entry not found");
+    }
+
+    // Use AI to automatically categorize the entry
+    let category = currentEntry.category || "その他";
+    try {
+      const categorizationResult = await categorizeEntry(
+        currentEntry.text,
+        growth,
+        hint
+      );
+      category = categorizationResult.category;
+      console.log(`AI categorized guest entry ${id} as: ${category} (confidence: ${categorizationResult.confidence})`);
+    } catch (error) {
+      console.warn(`AI categorization failed for guest entry ${id}:`, error);
+      // Keep existing category or default
+    }
+
     const [entry] = await db
       .update(entries)
       .set({
         aiGrowth: growth,
         aiHint: hint || null,
+        category: category,
         isCompleted: 1,
       })
       .where(eq(entries.id, id))

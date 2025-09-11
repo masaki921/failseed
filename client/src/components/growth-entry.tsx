@@ -20,7 +20,7 @@ interface GrowthEntryProps {
   entry: Entry;
   onHintAction: (entryId: string, action: 'tried' | 'skipped') => void;
   onDelete?: (entryId: string) => void;
-  onCategoryChange?: (entryId: string, category: string) => void;
+  onCategoryChange?: (entryId: string, category: typeof LEARNING_CATEGORIES[number]) => void;
   isUpdating: boolean;
   isDeleting?: boolean;
   isGuest?: boolean;
@@ -104,7 +104,7 @@ export default function GrowthEntry({ entry, onHintAction, onDelete, onCategoryC
           {!isGuest && onCategoryChange ? (
             <Select 
               value={entry.category || "その他"} 
-              onValueChange={(value) => onCategoryChange(entry.id, value)}
+              onValueChange={(value) => onCategoryChange(entry.id, value as typeof LEARNING_CATEGORIES[number])}
               data-testid={`select-category-${entry.id}`}
             >
               <SelectTrigger className="w-48 h-8 text-xs sm:text-sm bg-white border-leaf/20 rounded-lg">

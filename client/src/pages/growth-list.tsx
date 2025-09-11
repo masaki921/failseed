@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { apiRequest } from "@/lib/queryClient";
 import { type Entry, type UpdateHint, type UpdateCategory } from "@shared/schema";
 import GrowthEntry from "../components/growth-entry";
-import { Sprout, MessageCircle, List, Calendar, ChevronLeft, ChevronRight, LogOut } from "lucide-react";
+import { Sprout, MessageCircle, List, Calendar, ChevronLeft, ChevronRight, LogOut, BarChart3 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 // Simple date utilities
@@ -149,7 +149,7 @@ export default function GrowthList() {
     deleteEntryMutation.mutate(entryId);
   };
 
-  const handleCategoryChange = (entryId: string, category: string) => {
+  const handleCategoryChange = (entryId: string, category: UpdateCategory["category"]) => {
     updateCategoryMutation.mutate({ id: entryId, category });
   };
 
@@ -395,6 +395,17 @@ export default function GrowthList() {
               <span className="hidden sm:inline">記録一覧</span>
               <span className="sm:hidden">記録</span>
             </Button>
+            <Link href={isGuestMode ? "/analytics?guest=true" : "/analytics"}>
+              <Button 
+                variant="outline" 
+                className="text-leaf border-leaf/30 hover:bg-leaf/10 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3"
+                size="sm"
+                data-testid="button-analytics"
+              >
+                <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">分析</span>
+              </Button>
+            </Link>
             {!isGuestMode && (
               <Link href="/subscription">
                 <Button 
