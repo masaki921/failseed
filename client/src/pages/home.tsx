@@ -146,13 +146,17 @@ export default function Home() {
 
   // 初回訪問チェックとオンボーディングリダイレクト（ゲストモード以外）
   useEffect(() => {
-    if (!isLoading && !isAuthenticated && !isGuestMode) {
-      const hasCompletedOnboarding = localStorage.getItem('failseed_onboarding_completed');
-      if (!hasCompletedOnboarding) {
-        setLocation('/onboarding');
-      } else {
-        setLocation('/login');
-      }
+    // オンボーディング完了チェック：初回訪問時のみオンボーディングを表示
+    const hasCompletedOnboarding = localStorage.getItem('failseed_onboarding_completed');
+    
+    if (!hasCompletedOnboarding && !isLoading && !isAuthenticated && !isGuestMode) {
+      setLocation('/onboarding');
+      return;
+    }
+    
+    // オンボーディング完了済みの場合、未認証ならログインページへ
+    if (!isLoading && !isAuthenticated && !isGuestMode && hasCompletedOnboarding) {
+      setLocation('/login');
     }
   }, [isLoading, isAuthenticated, isGuestMode, setLocation]);
 
