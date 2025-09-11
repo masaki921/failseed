@@ -163,12 +163,7 @@ export default function Home() {
   const startConversationMutation = useMutation({
     mutationFn: async (message: string) => {
       const endpoint = isGuestMode ? '/api/guest/conversation/start' : '/api/conversation/start';
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: message })
-      });
-      if (!response.ok) throw new Error('Failed to start conversation');
+      const response = await apiRequest('POST', endpoint, { text: message });
       return response.json();
     },
     onSuccess: (response: any) => {
@@ -193,12 +188,7 @@ export default function Home() {
   const continueConversationMutation = useMutation({
     mutationFn: async (message: string) => {
       const endpoint = isGuestMode ? '/api/guest/conversation/continue' : '/api/conversation/continue';
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ entryId: currentEntryId, message: message })
-      });
-      if (!response.ok) throw new Error('Failed to continue conversation');
+      const response = await apiRequest('POST', endpoint, { entryId: currentEntryId, message: message });
       return response.json();
     },
     onSuccess: (response: any) => {
