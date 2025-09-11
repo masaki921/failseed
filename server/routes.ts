@@ -305,7 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // 危険性検出
-      const isDangerous = await detectDangerousContent(text);
+      const isDangerous = detectDangerousContent(text);
       if (isDangerous) {
         return res.status(400).json({
           error: "safety_concern",

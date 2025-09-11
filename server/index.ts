@@ -11,9 +11,8 @@ const app = express();
 
 // プロキシ信頼設定（Replit環境対応）
 const isProduction = process.env.REPLIT_DEPLOYMENT === '1';
-if (isProduction) {
-  app.set('trust proxy', 1);
-}
+// Replit環境では開発・本番問わずプロキシ設定が必要
+app.set('trust proxy', 1);
 
 // セキュリティミドルウェア
 app.use(helmet({
