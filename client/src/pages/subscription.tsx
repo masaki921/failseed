@@ -147,9 +147,11 @@ export default function Subscription() {
 
   // プラン変更時のclientSecret再取得
   const handlePlanChange = (newPlan: 'monthly' | 'yearly') => {
-    setSelectedPlan(newPlan);
-    setClientSecret(""); // clientSecretをクリアして再取得トリガー
-    setIsLoading(true);
+    if (newPlan !== selectedPlan) {
+      setSelectedPlan(newPlan);
+      setClientSecret(""); // clientSecretをクリアして再取得トリガー
+      setIsLoading(true);
+    }
   };
 
   // 成功画面
@@ -311,11 +313,30 @@ export default function Subscription() {
             </RadioGroup>
           </div>
 
-          {clientSecret && (
-            <Elements stripe={stripePromise} options={{ clientSecret }} key={clientSecret}>
-              <SubscriptionForm selectedPlan={selectedPlan} />
-            </Elements>
-          )}
+          {/* カード入力フォーム */}
+          <div className="mt-6">
+            {isLoading ? (
+              <div className="bg-leaf/10 border border-leaf/20 rounded-2xl p-6 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-leaf mx-auto mb-3"></div>
+                <p className="text-ink/70">決済フォームを準備中...</p>
+              </div>
+            ) : clientSecret ? (
+              <div className="bg-white border border-leaf/20 rounded-2xl p-6">
+                <h3 className="font-semibold text-ink mb-4 flex items-center">
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  カード情報を入力
+                </h3>
+                <Elements stripe={stripePromise} options={{ clientSecret }} key={clientSecret}>
+                  <SubscriptionForm selectedPlan={selectedPlan} />
+                </Elements>
+              </div>
+            ) : (
+              <div className="bg-sage/10 border border-sage/20 rounded-2xl p-6 text-center">
+                <CreditCard className="w-8 h-8 text-sage mx-auto mb-3" />
+                <p className="text-ink/70">上記からプランを選択してください</p>
+              </div>
+            )}
+          </div>
 
           <div className="mt-6 text-center space-y-3">
             <p className="text-xs text-ink/50">
