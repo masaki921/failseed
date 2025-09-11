@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Calendar, Lightbulb, Target, Sprout, LogOut } from "lucide-react";
+import { MessageCircle, Calendar, Lightbulb, Target, Sprout, LogOut, Crown, Star } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
@@ -389,6 +389,20 @@ export default function Home() {
                   <span className="sm:hidden">記録</span>
                 </Button>
               </Link>
+              {!isGuestMode && (
+                <Link href="/subscription">
+                  <Button 
+                    variant="outline" 
+                    className="text-leaf border-leaf/30 hover:bg-leaf/10 rounded-xl sm:rounded-2xl text-xs sm:text-sm px-2 sm:px-3 bg-gradient-to-r from-leaf/5 to-soil/5 font-medium"
+                    size="sm"
+                    data-testid="button-upgrade-nav"
+                  >
+                    <Crown className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                    <span className="hidden sm:inline">プレミアム</span>
+                    <span className="sm:hidden">👑</span>
+                  </Button>
+                </Link>
+              )}
               {isAuthenticated ? (
                 <Button 
                   variant="ghost" 
