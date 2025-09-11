@@ -26,6 +26,7 @@ export const entries = pgTable("entries", {
   aiGrowth: text("ai_growth"), // AI's growth insight (filled when conversation concludes)
   aiHint: text("ai_hint"), // AI's actionable hint
   hintStatus: text("hint_status").default("none").notNull(), // 'none' | 'tried' | 'skipped'
+  category: varchar("category", { length: 100 }).default("その他"), // Learning category
   isCompleted: integer("is_completed").default(0).notNull(), // 0 = ongoing, 1 = completed
 });
 
@@ -51,12 +52,31 @@ export const updateHintSchema = z.object({
   hintStatus: z.enum(["none", "tried", "skipped"]),
 });
 
+// Learning categories for classification
+export const LEARNING_CATEGORIES = [
+  "技術・スキル",
+  "人間関係",
+  "目標・計画",
+  "失敗・挫折",
+  "成功・達成",
+  "健康・メンタル",
+  "仕事・キャリア",
+  "学習・成長",
+  "創造・アイデア",
+  "その他"
+] as const;
+
+export const updateCategorySchema = z.object({
+  category: z.enum(LEARNING_CATEGORIES),
+});
+
 export type Entry = typeof entries.$inferSelect;
 export type InsertEntry = z.infer<typeof insertEntrySchema>;
 export type StartConversationInput = z.infer<typeof startConversationSchema>;
 export type ContinueConversationInput = z.infer<typeof continueConversationSchema>;
 export type FinalizeConversationInput = z.infer<typeof finalizeConversationSchema>;
 export type UpdateHint = z.infer<typeof updateHintSchema>;
+export type UpdateCategory = z.infer<typeof updateCategorySchema>;
 
 // User authentication schemas
 export const registerUserSchema = z.object({
