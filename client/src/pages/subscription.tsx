@@ -195,37 +195,6 @@ export default function Subscription() {
     );
   }
 
-  // 決済フォーム画面
-  if (!clientSecret) {
-    return (
-      <div className="min-h-screen bg-sage flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-white border-leaf/20 shadow-lg rounded-3xl">
-          <CardContent className="p-6 text-center space-y-4">
-            <Alert className="mb-4">
-              <AlertDescription>
-                決済フォームの準備中です。しばらくお待ちください。
-              </AlertDescription>
-            </Alert>
-            <div className="w-12 h-12 border-4 border-leaf/20 border-t-leaf rounded-full animate-spin mx-auto"></div>
-            <div className="space-y-2">
-              <Button 
-                onClick={() => window.location.reload()} 
-                variant="outline" 
-                className="text-leaf border-leaf/30 hover:bg-leaf/10 rounded-2xl mr-2"
-              >
-                再読み込み
-              </Button>
-              <Link href="/">
-                <Button variant="outline" className="text-ink/60 border-ink/20 hover:bg-ink/10 rounded-2xl">
-                  ホームに戻る
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-sage flex items-center justify-center p-4">
