@@ -120,12 +120,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create new user
       const user = await storage.createUser(userData);
       
-      // Store user ID in session
-      req.session.userId = user.id;
-      
-      // Return user data without password hash
-      const { passwordHash, ...userResponse } = user;
-      res.status(201).json(userResponse);
+      // セッション固定攻撃対策：セッションID再生成
+      req.session.regenerate((err) => {
+        if (err) {
+          console.error("Session regeneration error:", err);
+          return res.status(500).json({
+            error: "server_error",
+            message: "ユーザー登録に失敗しました。"
+          });
+        }
+        
+        // Store user ID in new session
+        req.session.userId = user.id;
+        
+        // セッション保存を明示的に実行
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+            return res.status(500).json({
+              error: "server_error",
+              message: "ユーザー登録に失敗しました。"
+            });
+          }
+          
+          // Return user data without password hash
+          const { passwordHash, ...userResponse } = user;
+          res.status(201).json(userResponse);
+        });
+      });
     } catch (error: any) {
       console.error("Register error:", error);
       if (error.name === 'ZodError') {
@@ -164,12 +186,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Store user ID in session
-      req.session.userId = user.id;
-      
-      // Return user data without password hash
-      const { passwordHash, ...userResponse } = user;
-      res.json(userResponse);
+      // セッション固定攻撃対策：セッションID再生成
+      req.session.regenerate((err) => {
+        if (err) {
+          console.error("Session regeneration error:", err);
+          return res.status(500).json({
+            error: "server_error",
+            message: "ログインに失敗しました。"
+          });
+        }
+        
+        // Store user ID in new session
+        req.session.userId = user.id;
+        
+        // セッション保存を明示的に実行
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+            return res.status(500).json({
+              error: "server_error",
+              message: "ログインに失敗しました。"
+            });
+          }
+          
+          // Return user data without password hash
+          const { passwordHash, ...userResponse } = user;
+          res.json(userResponse);
+        });
+      });
     } catch (error: any) {
       console.error("Login error:", error);
       if (error.name === 'ZodError') {
@@ -196,6 +240,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             message: "ログアウトに失敗しました。"
           });
         }
+        
+        // Cookie明示的削除（Replit環境対応）
+        const isProduction = process.env.REPLIT_DEPLOYMENT === '1';
+        res.clearCookie('failseed.sid', {
+          httpOnly: true,
+          secure: isProduction,
+          sameSite: isProduction ? 'none' : 'lax'
+        });
+        
         res.json({ message: "ログアウトしました。" });
       });
     } catch (error) {

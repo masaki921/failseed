@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import SQLiteStore from "connect-sqlite3";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
 import helmet from "helmet";
@@ -20,9 +21,11 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 
-// CORS設定
+// CORS設定 - 本番環境でもオリジンを制限してCSRF攻撃を防ぐ
 app.use(cors({
-  origin: isProduction ? true : ["http://localhost:3000", "http://localhost:5000"],
+  origin: isProduction ? 
+    (process.env.FRONTEND_URL || false) : // 本番環境では環境変数で明示的に設定
+    ["http://localhost:3000", "http://localhost:5000"],
   credentials: true,
   methods: ['GET', 'POST', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -45,15 +48,25 @@ app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
-// セッション設定 - セキュリティ強化
+// セッション設定 - 永続化とセキュリティ強化
 if (!process.env.SESSION_SECRET && isProduction) {
   throw new Error("SESSION_SECRET environment variable is required in production");
 }
 
+// SQLiteベースの永続セッションストア
+const SQLiteStoreSession = SQLiteStore(session);
+const sessionStore = new SQLiteStoreSession({
+  db: 'sessions.sqlite',
+  dir: './data',
+  table: 'sessions',
+}) as any; // TypeScript型エラー回避
+
 app.use(session({
+  store: sessionStore,
   secret: process.env.SESSION_SECRET || 'dev-only-secret-change-in-production',
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false, // 匿名ユーザーのセッション保存を避ける
+  rolling: true, // アクティブユーザーのCookie期限を延長
   cookie: {
     secure: isProduction, // デプロイ環境ではHTTPS必須
     maxAge: 1000 * 60 * 60 * 24 * 30, // 30日
