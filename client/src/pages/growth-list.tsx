@@ -389,7 +389,7 @@ export default function GrowthList() {
                   data-testid="button-upgrade-nav-growth"
                 >
                   <Crown className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                  <span className="hidden sm:inline">プレミアム</span>
+                  <span className="hidden sm:inline">プラス</span>
                   <span className="sm:hidden">👑</span>
                 </Button>
               </Link>

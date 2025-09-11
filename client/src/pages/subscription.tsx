@@ -229,15 +229,15 @@ export default function Subscription() {
             </Link>
             <div className="w-16"></div> {/* スペーサー */}
           </div>
-          <CardTitle className="text-2xl font-bold text-ink">プレミアムプラン</CardTitle>
-          <p className="text-ink/70">月額980円でより深い成長体験を</p>
+          <CardTitle className="text-2xl font-bold text-ink">プラスプラン</CardTitle>
+          <p className="text-ink/70">月額480円でより深い成長体験を</p>
         </CardHeader>
         <CardContent>
           <div className="mb-6 space-y-3">
             <div className="bg-leaf/10 p-4 rounded-2xl">
               <h3 className="font-semibold text-leaf mb-2 flex items-center">
                 <CreditCard className="w-4 h-4 mr-2" />
-                プレミアム特典
+                プラス特典
               </h3>
               <ul className="text-sm text-ink/70 space-y-1">
                 <li>• 無制限の成長記録保存</li>
