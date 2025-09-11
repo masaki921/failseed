@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { apiRequest } from "@/lib/queryClient";
-import { type Entry, type UpdateHint } from "@shared/schema";
+import { type Entry, type UpdateHint, type UpdateCategory } from "@shared/schema";
 import GrowthEntry from "../components/growth-entry";
 import { Sprout, MessageCircle, List, Calendar, ChevronLeft, ChevronRight, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -131,12 +131,26 @@ export default function GrowthList() {
     }
   });
 
+  const updateCategoryMutation = useMutation({
+    mutationFn: async ({ id, category }: { id: string; category: UpdateCategory["category"] }) => {
+      const response = await apiRequest("PATCH", `/api/entry/${id}/category`, { category });
+      return response.json() as Promise<Entry>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/grows'] });
+    }
+  });
+
   const handleHintAction = (entryId: string, action: 'tried' | 'skipped') => {
     updateHintMutation.mutate({ id: entryId, hintStatus: action });
   };
 
   const handleDeleteEntry = (entryId: string) => {
     deleteEntryMutation.mutate(entryId);
+  };
+
+  const handleCategoryChange = (entryId: string, category: string) => {
+    updateCategoryMutation.mutate({ id: entryId, category });
   };
 
   // URLハッシュで特定の記録にスクロール
@@ -213,7 +227,8 @@ export default function GrowthList() {
                 entry={entry} 
                 onHintAction={isGuestMode ? () => {} : handleHintAction}
                 onDelete={isGuestMode ? undefined : handleDeleteEntry}
-                isUpdating={updateHintMutation.isPending}
+                onCategoryChange={isGuestMode ? undefined : handleCategoryChange}
+                isUpdating={updateHintMutation.isPending || updateCategoryMutation.isPending}
                 isDeleting={deleteEntryMutation.isPending}
                 isGuest={isGuestMode}
               />

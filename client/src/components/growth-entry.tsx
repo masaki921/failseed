@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,19 +13,20 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { type Entry } from "@shared/schema";
-import { Lightbulb, Trash2 } from "lucide-react";
+import { type Entry, LEARNING_CATEGORIES } from "@shared/schema";
+import { Lightbulb, Trash2, Tag } from "lucide-react";
 
 interface GrowthEntryProps {
   entry: Entry;
   onHintAction: (entryId: string, action: 'tried' | 'skipped') => void;
   onDelete?: (entryId: string) => void;
+  onCategoryChange?: (entryId: string, category: string) => void;
   isUpdating: boolean;
   isDeleting?: boolean;
   isGuest?: boolean;
 }
 
-export default function GrowthEntry({ entry, onHintAction, onDelete, isUpdating, isDeleting = false, isGuest = false }: GrowthEntryProps) {
+export default function GrowthEntry({ entry, onHintAction, onDelete, onCategoryChange, isUpdating, isDeleting = false, isGuest = false }: GrowthEntryProps) {
   const formatDate = (date: Date | string) => {
     const d = new Date(date);
     return d.toLocaleDateString('ja-JP', {
@@ -91,6 +93,40 @@ export default function GrowthEntry({ entry, onHintAction, onDelete, isUpdating,
               </AlertDialogContent>
             </AlertDialog>
           </div>
+        </div>
+        
+        {/* Category display and selection */}
+        <div className="mb-3 sm:mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Tag className="w-3 h-3 sm:w-4 sm:h-4 text-leaf" />
+            <span className="text-xs sm:text-sm text-ink/60">カテゴリ</span>
+          </div>
+          {!isGuest && onCategoryChange ? (
+            <Select 
+              value={entry.category || "その他"} 
+              onValueChange={(value) => onCategoryChange(entry.id, value)}
+              data-testid={`select-category-${entry.id}`}
+            >
+              <SelectTrigger className="w-48 h-8 text-xs sm:text-sm bg-white border-leaf/20 rounded-lg">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {LEARNING_CATEGORIES.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Badge 
+              variant="outline" 
+              className="border-leaf/30 text-leaf bg-leaf/10 text-xs sm:text-sm"
+              data-testid={`badge-category-${entry.id}`}
+            >
+              {entry.category || "その他"}
+            </Badge>
+          )}
         </div>
         
         <div className="mb-3 sm:mb-4">
