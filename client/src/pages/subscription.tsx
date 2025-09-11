@@ -17,7 +17,7 @@ if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
 }
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
-const SubscriptionForm = ({ selectedPlan }: { selectedPlan: 'monthly' | 'yearly' }) => {
+const SubscriptionForm = ({ selectedPlan }: { selectedPlan: 'monthly' | 'yearly' | null }) => {
   const stripe = useStripe();
   const elements = useElements();
   const { toast } = useToast();
@@ -28,7 +28,7 @@ const SubscriptionForm = ({ selectedPlan }: { selectedPlan: 'monthly' | 'yearly'
     yearly: { price: '4,500円', period: '年額', text: 'プラスプランに登録（年額）' }
   };
   
-  const currentPlan = planDetails[selectedPlan] || planDetails.monthly;
+  const currentPlan = selectedPlan ? planDetails[selectedPlan] : planDetails.monthly;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,8 +80,8 @@ const SubscriptionForm = ({ selectedPlan }: { selectedPlan: 'monthly' | 'yearly'
 export default function Subscription() {
   const [clientSecret, setClientSecret] = useState("");
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly' | null>(null);
   const { toast } = useToast();
 
   // URLパラメータで成功状態を確認
@@ -89,27 +89,32 @@ export default function Subscription() {
   const isSuccess = urlParams.get('success') === 'true';
 
   useEffect(() => {
-    // まずサブスクリプション状態を確認
+    // サブスクリプション状態の確認のみ
     const checkSubscriptionStatus = async () => {
       try {
-        // 認証済みユーザーのみサブスクリプション状態を確認
-        try {
-          const response = await apiRequest("GET", "/api/subscription-status");
-          const data = await response.json();
-          setSubscriptionStatus(data.status);
-          
-          if (data.status === 'active') {
-            setIsLoading(false);
-            return; // 既にアクティブなら決済フォームは表示しない
-          }
-        } catch (authError) {
-          // 未認証ユーザーの場合はスキップ
-          console.log("User not authenticated, proceeding with subscription setup");
-        }
-        
-        // 新しいサブスクリプションを作成（認証不要）
+        const response = await apiRequest("GET", "/api/subscription-status");
+        const data = await response.json();
+        setSubscriptionStatus(data.status);
+      } catch (error) {
+        console.log("User not authenticated, continuing with subscription setup");
+        setSubscriptionStatus('inactive');
+      }
+    };
+
+    checkSubscriptionStatus();
+  }, []);
+
+  // プラン変更時のclientSecret作成
+  const handlePlanChange = async (newPlan: 'monthly' | 'yearly') => {
+    if (newPlan !== selectedPlan) {
+      setSelectedPlan(newPlan);
+      setClientSecret(""); // clientSecretをクリア
+      setIsLoading(true);
+
+      try {
+        // 新しいサブスクリプションを作成
         const subscriptionResponse = await apiRequest("POST", "/api/create-subscription-guest", {
-          plan: selectedPlan
+          plan: newPlan
         });
         const subscriptionData = await subscriptionResponse.json();
         
@@ -131,26 +136,15 @@ export default function Subscription() {
           });
         }
       } catch (error) {
-        console.error("Subscription check error:", error);
+        console.error("Subscription creation error:", error);
         toast({
           title: "エラー",
-          description: "決済フォームの準備に失敗しました。ページを再読み込みしてください。",
+          description: "決済フォームの準備に失敗しました。",
           variant: "destructive",
         });
       } finally {
         setIsLoading(false);
       }
-    };
-
-    checkSubscriptionStatus();
-  }, [selectedPlan, toast]);
-
-  // プラン変更時のclientSecret再取得
-  const handlePlanChange = (newPlan: 'monthly' | 'yearly') => {
-    if (newPlan !== selectedPlan) {
-      setSelectedPlan(newPlan);
-      setClientSecret(""); // clientSecretをクリアして再取得トリガー
-      setIsLoading(true);
     }
   };
 
@@ -272,7 +266,7 @@ export default function Subscription() {
           {/* プラン選択UI */}
           <div className="mb-6">
             <h3 className="font-semibold text-ink mb-4">プランを選択</h3>
-            <RadioGroup value={selectedPlan} onValueChange={handlePlanChange}>
+            <RadioGroup value={selectedPlan || ""} onValueChange={handlePlanChange}>
               <div className="space-y-3">
                 <div className="flex items-center space-x-3 p-4 border border-leaf/20 rounded-2xl hover:bg-leaf/5 transition-colors">
                   <RadioGroupItem value="monthly" id="monthly" />
