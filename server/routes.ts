@@ -23,7 +23,7 @@ declare module 'express-session' {
     }[];
   }
 }
-import { generateConversationResponse, generateFinalizationResponse, detectDangerousContent } from "./services/gemini";
+import { generateConversationResponse, generateFinalizationResponse, detectDangerousContent } from "./services/openai";
 import { 
   startConversationSchema, 
   continueConversationSchema, 
